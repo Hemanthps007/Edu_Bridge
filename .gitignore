@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+.env
+firebase_credentials.json
+*.sqlite3
+/staticfiles/
+/media/
+.sessions/
+.DS_Store
+Thumbs.db
+firebase_credentials_template.json
+*.json

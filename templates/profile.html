@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<div style="max-width:800px;margin:0 auto;padding:32px 24px;">
+  <h1 style="font-size:2rem;font-weight:900;color:#fff;margin:0 0 32px;">My Profile</h1>
+  <div class="glass" style="border-radius:20px;padding:32px;">
+    <form method="post" style="display:flex;flex-direction:column;gap:24px;">
+      {% csrf_token %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Full Name</label>
+          <input type="text" name="name" value="{{ profile.name|default:'' }}" class="inp"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Phone Number</label>
+          <input type="tel" name="phone" value="{{ profile.phone|default:'' }}" placeholder="+91 98765 43210" class="inp"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Target Degree</label>
+          <select name="degree" class="inp">
+            <option value="MS"   {% if profile.degree == 'MS'   %}selected{% endif %}>MS / M.Tech</option>
+            <option value="MBA"  {% if profile.degree == 'MBA'  %}selected{% endif %}>MBA</option>
+            <option value="PhD"  {% if profile.degree == 'PhD'  %}selected{% endif %}>PhD</option>
+            <option value="MIM"  {% if profile.degree == 'MIM'  %}selected{% endif %}>MIM</option>
+            <option value="MEng" {% if profile.degree == 'MEng' %}selected{% endif %}>MEng</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Current University</label>
+          <input type="text" name="university_current" value="{{ profile.university_current|default:'' }}" placeholder="IIT Bombay / NIT Trichy" class="inp"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">GPA / CGPA</label>
+          <input type="number" name="gpa" value="{{ profile.gpa|default:'' }}" step="0.01" placeholder="3.5 or 8.5" class="inp"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Target Country</label>
+          <select name="country_goal" class="inp">
+            <option value="USA"       {% if profile.country_goal == 'USA'       %}selected{% endif %}>USA</option>
+            <option value="Canada"    {% if profile.country_goal == 'Canada'    %}selected{% endif %}>Canada</option>
+            <option value="UK"        {% if profile.country_goal == 'UK'        %}selected{% endif %}>UK</option>
+            <option value="Germany"   {% if profile.country_goal == 'Germany'   %}selected{% endif %}>Germany</option>
+            <option value="Australia" {% if profile.country_goal == 'Australia' %}selected{% endif %}>Australia</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Target Program</label>
+          <input type="text" name="target_program" value="{{ profile.target_program|default:'' }}" placeholder="MS Computer Science" class="inp"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Annual Budget</label>
+          <select name="budget" class="inp">
+            <option value="low"    {% if profile.budget == 'low'    %}selected{% endif %}>Under $30K/yr</option>
+            <option value="medium" {% if profile.budget == 'medium' %}selected{% endif %}>$30K - $50K/yr</option>
+            <option value="high"   {% if profile.budget == 'high'   %}selected{% endif %}>Over $50K/yr</option>
+          </select>
+        </div>
+        <div style="grid-column:1/-1;">
+          <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Journey Stage</label>
+          <select name="journey_stage" class="inp">
+            <option value="exploration"   {% if profile.journey_stage == 'exploration'   %}selected{% endif %}>Exploring Options</option>
+            <option value="shortlisting"  {% if profile.journey_stage == 'shortlisting'  %}selected{% endif %}>Shortlisting Universities</option>
+            <option value="test_prep"     {% if profile.journey_stage == 'test_prep'     %}selected{% endif %}>Test Preparation</option>
+            <option value="applications"  {% if profile.journey_stage == 'applications'  %}selected{% endif %}>Applications In Progress</option>
+            <option value="visa"          {% if profile.journey_stage == 'visa'          %}selected{% endif %}>Visa Process</option>
+            <option value="financing"     {% if profile.journey_stage == 'financing'     %}selected{% endif %}>Loan / Financing</option>
+            <option value="pre_departure" {% if profile.journey_stage == 'pre_departure' %}selected{% endif %}>Pre-Departure</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <button type="submit" class="btn-primary">
+          <i class="fa-solid fa-floppy-disk"></i> Save Profile (+10 pts)
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

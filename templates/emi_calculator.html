@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}EMI Calculator{% endblock %}
+{% block content %}
+<div style="max-width:900px;margin:0 auto;padding:32px 24px;">
+  <div style="text-align:center;margin-bottom:40px;" data-aos="fade-up">
+    <h1 style="font-size:2.4rem;font-weight:900;color:#fff;margin:0 0 12px;">EMI <span class="grad-text">Calculator</span></h1>
+    <p style="color:#64748B;">Plan your loan repayment before you borrow. See your exact monthly EMI and full amortisation schedule.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;">
+    <div class="glass" style="border-radius:20px;padding:28px;" data-aos="fade-right">
+      <form method="post" style="display:flex;flex-direction:column;gap:18px;">
+        {% csrf_token %}
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Loan Amount (INR)</label>
+          <input type="number" name="principal" value="{{ form_data.principal|default:'4500000' }}" class="inp" placeholder="4500000"/>
+          <div style="font-size:11px;color:#475569;margin-top:4px;">e.g. &#8377;45,00,000 = 4500000</div>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Interest Rate (% per annum)</label>
+          <input type="number" name="rate" step="0.1" value="{{ form_data.rate|default:'10.5' }}" class="inp"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Loan Tenure</label>
+          <select name="tenure" class="inp">
+            <option value="60">5 years (60 months)</option>
+            <option value="84">7 years (84 months)</option>
+            <option value="120" {% if not form_data.tenure or form_data.tenure == '120' %}selected{% endif %}>10 years (120 months)</option>
+            <option value="180">15 years (180 months)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary" style="justify-content:center;">
+          <i class="fa-solid fa-calculator"></i> Calculate EMI
+        </button>
+      </form>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      {% if calc %}
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;" data-aos="fade-left">
+        <div class="glass" style="border-radius:16px;padding:18px;text-align:center;">
+          <div style="font-size:11px;color:#64748B;margin-bottom:4px;">Monthly EMI</div>
+          <div class="grad-text" style="font-size:1.3rem;font-weight:900;">&#8377;{{ emi }}</div>
+        </div>
+        <div class="glass" style="border-radius:16px;padding:18px;text-align:center;">
+          <div style="font-size:11px;color:#64748B;margin-bottom:4px;">Total Interest</div>
+          <div style="font-size:1.3rem;font-weight:900;color:#F97316;">&#8377;{{ total_int }}</div>
+        </div>
+        <div class="glass" style="border-radius:16px;padding:18px;text-align:center;">
+          <div style="font-size:11px;color:#64748B;margin-bottom:4px;">Total Payment</div>
+          <div style="font-size:1.3rem;font-weight:900;color:#10B981;">&#8377;{{ total_pay }}</div>
+        </div>
+      </div>
+      <div class="glass" style="border-radius:20px;padding:24px;" data-aos="fade-up">
+        <h3 style="font-weight:600;color:#fff;margin:0 0 16px;font-size:14px;">Payment Breakdown</h3>
+        <canvas id="emiChart" height="220"></canvas>
+      </div>
+      <div class="glass" style="border-radius:16px;padding:20px;" data-aos="fade-up">
+        <h3 style="font-weight:600;color:#fff;margin:0 0 12px;font-size:13px;">First Year Amortisation</h3>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.06);">
+                <th style="text-align:left;padding:8px 10px;color:#64748B;font-weight:500;">Month</th>
+                <th style="text-align:right;padding:8px 10px;color:#64748B;font-weight:500;">Principal</th>
+                <th style="text-align:right;padding:8px 10px;color:#64748B;font-weight:500;">Interest</th>
+                <th style="text-align:right;padding:8px 10px;color:#64748B;font-weight:500;">Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in schedule %}
+              <tr style="border-bottom:1px solid rgba(255,255,255,.03);">
+                <td style="padding:7px 10px;color:#94A3B8;">{{ r.month }}</td>
+                <td style="padding:7px 10px;text-align:right;color:#34D399;">&#8377;{{ r.principal|floatformat:0 }}</td>
+                <td style="padding:7px 10px;text-align:right;color:#FB923C;">&#8377;{{ r.interest|floatformat:0 }}</td>
+                <td style="padding:7px 10px;text-align:right;color:#64748B;">&#8377;{{ r.balance|floatformat:0 }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% else %}
+      <div class="glass" style="border-radius:20px;padding:64px 24px;text-align:center;" data-aos="fade-in">
+        <div class="afloat" style="font-size:3.5rem;margin-bottom:16px;">&#128290;</div>
+        <h3 style="font-weight:700;color:#fff;margin:0 0 8px;">Enter loan details</h3>
+        <p style="color:#64748B;font-size:13px;margin:0;">See your exact monthly EMI and complete amortisation schedule.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+{{ chart_data|json_script:"emi-data" }}
+<script>
+// Only init chart when data is present
+var dataEl = document.getElementById('emi-data');
+var emiChartData = dataEl ? JSON.parse(dataEl.textContent) : null;
+if (emiChartData && document.getElementById('emiChart')) {
+  new Chart(document.getElementById('emiChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Principal', 'Total Interest'],
+      datasets: [{
+        data: [emiChartData.principal, emiChartData.interest],
+        backgroundColor: ['#0EA5E9', '#F97316'],
+        borderWidth: 0,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: '#94A3B8', padding: 20 } },
+        tooltip: { callbacks: { label: function(c){ return ' ₹' + c.raw.toLocaleString('en-IN'); } } }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

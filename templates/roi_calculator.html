@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}ROI Calculator{% endblock %}
+{% block content %}
+<div style="max-width:1100px;margin:0 auto;padding:32px 24px;">
+  <div style="text-align:center;margin-bottom:40px;" data-aos="fade-up">
+    <span class="badge badge-green" style="margin-bottom:16px;">Financial Modelling</span>
+    <h1 style="font-size:2.4rem;font-weight:900;color:#fff;margin:0 0 12px;">Education <span class="grad-text">ROI Calculator</span></h1>
+    <p style="color:#64748B;max-width:520px;margin:0 auto;">Calculate your real return on investment. See exactly when your degree pays for itself with a 10-year projection.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:2fr 3fr;gap:32px;align-items:start;">
+    <div class="glass" style="border-radius:20px;padding:28px;" data-aos="fade-right">
+      <h3 style="font-weight:600;color:#fff;margin:0 0 20px;font-size:15px;">Enter Details</h3>
+      <form method="post" style="display:flex;flex-direction:column;gap:16px;">
+        {% csrf_token %}
+        <div>
+          <label style="display:block;font-size:12px;color:#94A3B8;margin-bottom:6px;">Annual Tuition (USD)</label>
+          <input type="number" name="tuition" value="{{ form_data.tuition|default:'35000' }}" class="inp"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;color:#94A3B8;margin-bottom:6px;">Annual Living Cost (USD)</label>
+          <input type="number" name="living" value="{{ form_data.living|default:'15000' }}" class="inp"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;color:#94A3B8;margin-bottom:6px;">Program Duration</label>
+          <select name="duration" class="inp">
+            <option value="1" {% if form_data.duration == '1' %}selected{% endif %}>1 year</option>
+            <option value="2" {% if not form_data.duration or form_data.duration == '2' %}selected{% endif %}>2 years</option>
+            <option value="3" {% if form_data.duration == '3' %}selected{% endif %}>3 years</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;color:#94A3B8;margin-bottom:6px;">Field of Study</label>
+          <select name="field" class="inp">
+            <option value="Computer Science"     {% if form_data.field == 'Computer Science'     %}selected{% endif %}>Computer Science</option>
+            <option value="Business Administration" {% if form_data.field == 'Business Administration' %}selected{% endif %}>Business Administration</option>
+            <option value="Data Science"         {% if form_data.field == 'Data Science'         %}selected{% endif %}>Data Science</option>
+            <option value="Engineering"          {% if form_data.field == 'Engineering'          %}selected{% endif %}>Engineering</option>
+            <option value="Finance"              {% if form_data.field == 'Finance'              %}selected{% endif %}>Finance</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;color:#94A3B8;margin-bottom:6px;">Country</label>
+          <select name="country" class="inp">
+            <option value="USA"       {% if form_data.country == 'USA'       %}selected{% endif %}>USA</option>
+            <option value="Canada"    {% if form_data.country == 'Canada'    %}selected{% endif %}>Canada</option>
+            <option value="UK"        {% if form_data.country == 'UK'        %}selected{% endif %}>UK</option>
+            <option value="Germany"   {% if form_data.country == 'Germany'   %}selected{% endif %}>Germany</option>
+            <option value="Australia" {% if form_data.country == 'Australia' %}selected{% endif %}>Australia</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;color:#94A3B8;margin-bottom:6px;">Loan Interest Rate (%)</label>
+          <input type="number" name="loan_interest" value="{{ form_data.loan_interest|default:'10.5' }}" step="0.1" class="inp"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;color:#94A3B8;margin-bottom:6px;">Current Annual Salary (INR)</label>
+          <input type="number" name="pre_salary" value="{{ form_data.pre_salary|default:'600000' }}" class="inp"/>
+        </div>
+        <button type="submit" class="btn-primary" style="justify-content:center;">
+          <i class="fa-solid fa-calculator"></i> Calculate ROI
+        </button>
+      </form>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      {% if calc %}
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;" data-aos="fade-left">
+        <div class="glass" style="border-radius:16px;padding:20px;text-align:center;">
+          <div style="font-size:11px;color:#64748B;margin-bottom:6px;">Total Cost</div>
+          <div class="grad-text" style="font-size:1.5rem;font-weight:900;">&#8377;{{ total_cost_inr }}</div>
+          <div style="font-size:11px;color:#475569;margin-top:2px;">${{ total_cost_usd }}</div>
+        </div>
+        <div class="glass" style="border-radius:16px;padding:20px;text-align:center;">
+          <div style="font-size:11px;color:#64748B;margin-bottom:6px;">Est. Salary</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#10B981;">&#8377;{{ est_sal_inr }}pa</div>
+          <div style="font-size:11px;color:#475569;margin-top:2px;">${{ est_sal_usd }} USD</div>
+        </div>
+        <div class="glass" style="border-radius:16px;padding:20px;text-align:center;">
+          <div style="font-size:11px;color:#64748B;margin-bottom:6px;">Payback Period</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#F97316;">{{ payback_years }} yrs</div>
+          <div style="font-size:11px;color:#475569;margin-top:2px;">EMI &#8377;{{ emi_monthly }}/mo</div>
+        </div>
+      </div>
+      <div class="glass" style="border-radius:20px;padding:24px;" data-aos="fade-up">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h3 style="font-weight:600;color:#fff;margin:0;font-size:14px;">10-Year Financial Projection</h3>
+          {% if roi_pct >= 0 %}<span class="badge badge-green">ROI: {{ roi_pct }}%</span>
+          {% else %}<span class="badge badge-red">ROI: {{ roi_pct }}%</span>{% endif %}
+        </div>
+        <canvas id="roiChart" height="200"></canvas>
+      </div>
+      <div class="glass" style="border-radius:16px;padding:24px;" data-aos="fade-up">
+        <h3 style="font-weight:600;color:#fff;margin:0 0 8px;font-size:14px;">Annual Salary Increase</h3>
+        <div class="grad-text" style="font-size:1.8rem;font-weight:900;">+&#8377;{{ ann_gain_inr }}/yr</div>
+        <p style="color:#64748B;font-size:13px;margin:6px 0 0;">Estimated incremental earnings post-degree vs current salary</p>
+      </div>
+      {% else %}
+      <div class="glass" style="border-radius:20px;padding:64px 24px;text-align:center;" data-aos="fade-in">
+        <div class="afloat" style="font-size:3.5rem;margin-bottom:16px;">&#128202;</div>
+        <h3 style="font-weight:700;color:#fff;margin:0 0 8px;">Fill in the form</h3>
+        <p style="color:#64748B;font-size:13px;margin:0;">Enter your education costs and we'll generate a complete 10-year ROI projection with interactive charts.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+{{ chart_data|json_script:"roi-data" }}
+<script>
+// Only initialise chart when calc data is present
+var dataEl = document.getElementById('roi-data');
+var roiChartData = dataEl ? JSON.parse(dataEl.textContent) : null;
+if (roiChartData && document.getElementById('roiChart')) {
+  new Chart(document.getElementById('roiChart'), {
+    type: 'line',
+    data: {
+      labels: roiChartData.years.map(function(y){ return 'Year ' + y; }),
+      datasets: [
+        { label: 'Cumulative Cost (\u20B9L)', data: roiChartData.cost, borderColor: '#EF4444', backgroundColor: 'rgba(239,68,68,0.08)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 3 },
+        { label: 'Cumulative Gain (\u20B9L)', data: roiChartData.gain, borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.08)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 3 }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#94A3B8', font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { color: '#64748B' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#64748B', callback: function(v){ return '\u20B9' + v + 'L'; } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

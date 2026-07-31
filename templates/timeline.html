@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Application Timeline{% endblock %}
+{% block content %}
+<div style="max-width:900px;margin:0 auto;padding:32px 24px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:40px;">
+    <div>
+      <h1 style="font-size:2rem;font-weight:900;color:#fff;margin:0 0 4px;">Application <span class="grad-text">Timeline</span></h1>
+      <p style="color:#64748B;margin:0;">Fall 2026 Intake &bull; {{ country }}</p>
+    </div>
+    <span class="badge badge-blue">{{ events|length }} Milestones</span>
+  </div>
+
+  <div style="position:relative;">
+    <!-- Vertical connecting line -->
+    <div style="position:absolute;left:31px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,#0EA5E9,#10B981,rgba(14,165,233,.1));"></div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;padding-left:16px;">
+      {% for ev in events %}
+      <!--
+        BUG 5 FIX: was data-aos-delay="{{ forloop.counter0 }}30"
+        That CONCATENATES the counter with the string "30", producing:
+        "030", "130", "230"... "1430" — for 15 timeline items, the last few
+        have 1030-1430ms delays and never animate during normal scrolling.
+
+        FIX: {% widthratio forloop.counter0 1 40 %} multiplies counter × 40,
+        giving delays of 0, 40, 80, 120 ... 560ms — evenly staggered, all visible.
+        widthratio is Django's built-in arithmetic: value × max_width / max_value.
+        Here max_value=1, max_width=40, so result = forloop.counter0 × 40.
+      -->
+      <div style="display:flex;gap:20px;" data-aos="fade-right" data-aos-delay="{% widthratio forloop.counter0 1 40 %}">
+
+        <!-- Coloured dot indicator -->
+        {% if ev.category == 'milestone' %}
+        <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;background:#030B1A;margin-top:2px;border:2px solid #F97316;color:#FB923C;">&#9679;</div>
+        {% elif ev.category == 'finance' %}
+        <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;background:#030B1A;margin-top:2px;border:2px solid #10B981;color:#34D399;">&#9679;</div>
+        {% elif ev.category == 'test' %}
+        <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;background:#030B1A;margin-top:2px;border:2px solid #FBBF24;color:#FDE047;">&#9679;</div>
+        {% elif ev.category == 'visa' %}
+        <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;background:#030B1A;margin-top:2px;border:2px solid #EF4444;color:#FCA5A5;">&#9679;</div>
+        {% else %}
+        <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;background:#030B1A;margin-top:2px;border:2px solid rgba(14,165,233,.5);color:#7DD3FC;">&#9679;</div>
+        {% endif %}
+
+        <!-- Event card -->
+        <div class="glass" style="border-radius:14px;padding:16px;flex:1;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div>
+              <!--
+                BUG 6 FIX: was a multiline style attribute:
+                  style="font-weight:600;font-size:14px;
+                      {% if ev.category == 'milestone' %}color:#FB923C;{% else %}color:#fff;{% endif %}"
+                That produces HTML with a literal newline + spaces inside the style value —
+                invalid attribute syntax that strict HTML parsers reject.
+
+                FIX: each branch produces its own complete <div> with a clean single-line style.
+              -->
+              {% if ev.category == 'milestone' %}
+              <div style="font-weight:600;font-size:14px;color:#FB923C;">{{ ev.label }}</div>
+              {% else %}
+              <div style="font-weight:600;font-size:14px;color:#fff;">{{ ev.label }}</div>
+              {% endif %}
+              <div style="font-size:12px;color:#64748B;margin-top:2px;">{{ ev.desc }}</div>
+            </div>
+            {% if ev.category == 'finance' %}<span class="badge badge-green">Finance</span>
+            {% elif ev.category == 'test' %}<span class="badge badge-yellow">Test</span>
+            {% elif ev.category == 'visa' %}<span class="badge badge-red">Visa</span>
+            {% elif ev.category == 'milestone' %}<span class="badge badge-orange">Milestone</span>
+            {% elif ev.category == 'decision' %}<span class="badge badge-orange">Decision</span>
+            {% else %}<span class="badge badge-blue">{{ ev.category|title }}</span>{% endif %}
+          </div>
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="glass" style="border-radius:20px;padding:40px;text-align:center;margin-top:48px;" data-aos="fade-up">
+    <h3 style="font-weight:700;color:#fff;margin:0 0 8px;">Ready to Fund Your Journey?</h3>
+    <p style="color:#64748B;font-size:13px;margin:0 0 24px;">Start your education loan application early — the process takes 4-8 weeks from start to disbursement.</p>
+    <a href="{% url 'loan_application' %}" class="btn-teal">
+      <i class="fa-solid fa-file-signature"></i> Apply for Education Loan
+    </a>
+  </div>
+</div>
+{% endblock %}

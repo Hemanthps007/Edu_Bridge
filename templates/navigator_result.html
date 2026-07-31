@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Navigator Results{% endblock %}
+{% block content %}
+<div style="max-width: 1000px; margin: 0 auto; padding: 32px 24px;">
+  <div
+    style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 900; color: #fff; margin: 0 0 4px;">AI <span
+          class="grad-text">Recommendations</span></h1>
+      <p style="color: #64748B; margin: 0;">Based on your profile &bull; {{ assessment.generated_at|slice:":10" }}</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div class="glass" style="border-radius: 12px; padding: 12px 20px; text-align: center;">
+        <div style="font-size: 11px; color: #64748B; margin-bottom: 2px;">Profile Score</div>
+        <div class="grad-text" style="font-size: 1.6rem; font-weight: 900;">{{ assessment.profile_score }}</div>
+      </div>
+      <a href="{% url 'career_navigator' %}" class="btn-secondary" style="font-size: 13px; padding: 9px 18px;">
+        <i class="fa-solid fa-refresh"></i> Retake
+      </a>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; font-size: 12px; color: #64748B;">
+    <span><span class="tag-safety">Safety</span> &nbsp;65%+ admit chance</span>
+    <span><span class="tag-target">Target</span> &nbsp;45–65% admit chance</span>
+    <span><span class="tag-reach">Reach</span> &nbsp;&lt;45% admit chance</span>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    {% for uni in assessment.recommendations %}
+    <div class="glass" style="border-radius: 20px; padding: 24px;" data-aos="fade-up"
+      data-aos-delay="{{ forloop.counter0 }}50">
+      <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+        <div
+          style="width: 56px; height: 56px; border-radius: 16px; background: rgba(14, 165, 233, .07); border: 1px solid rgba(14, 165, 233, .14); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+          &#127963;</div>
+        <div style="flex: 1; min-width: 200px;">
+          <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
+            <h3 style="font-weight: 700; color: #fff; font-size: 1.1rem; margin: 0;">{{ uni.name }}</h3>
+            <span class="tag-{{ uni.category }}">{{ uni.category|title }}</span>
+            <span style="color: #475569; font-size: 13px;">#{{ uni.rank }} in field</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: #64748B;">
+            <span><i class="fa-solid fa-dollar-sign" style="color: #34D399; font-size: 11px;"></i> ${{
+              uni.tuition|floatformat:0 }}/yr tuition</span>
+            <span><i class="fa-solid fa-users" style="color: #FB923C; font-size: 11px;"></i> {{ uni.accept_rate }}%
+              acceptance</span>
+            <span><i class="fa-solid fa-graduation-cap" style="color: #0EA5E9; font-size: 11px;"></i> Avg GPA {{
+              uni.avg_gpa }}</span>
+            {% if uni.avg_gre %}<span><i class="fa-solid fa-pencil" style="color: #FDE047; font-size: 11px;"></i> Avg
+              GRE {{ uni.avg_gre }}</span>{% endif %}
+          </div>
+        </div>
+        <div style="text-align: right; flex-shrink: 0;">
+          {% if uni.probability >= 65 %}
+          <div style="font-size: 2rem; font-weight: 900; color: #34D399;">{{ uni.probability }}%</div>
+          {% elif uni.probability >= 45 %}
+          <div style="font-size: 2rem; font-weight: 900; color: #FB923C;">{{ uni.probability }}%</div>
+          {% else %}
+          <div style="font-size: 2rem; font-weight: 900; color: #F87171;">{{ uni.probability }}%</div>
+          {% endif %}
+          <div style="font-size: 11px; color: #64748B;">admit chance</div>
+          <div
+            style="margin-top: 8px; width: 96px; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .07);">
+            {% if uni.probability >= 65 %}
+            <div
+              style="height: 6px; border-radius: 3px; background: #10B981; width: calc({{ uni.probability|default:0 }} * 1%);">
+            </div>
+            {% elif uni.probability >= 45 %}
+            <div
+              style="height: 6px; border-radius: 3px; background: #F97316; width: calc({{ uni.probability|default:0 }} * 1%);">
+            </div>
+            {% else %}
+            <div
+              style="height: 6px; border-radius: 3px; background: #EF4444; width: calc({{ uni.probability|default:0 }} * 1%);">
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div style="margin-top: 40px; display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;">
+    <a href="{% url 'loan_estimator' %}" class="btn-teal"><i class="fa-solid fa-calculator"></i> Check Loan
+      Eligibility</a>
+    <a href="{% url 'timeline' %}" class="btn-secondary"><i class="fa-solid fa-calendar"></i> View Application
+      Timeline</a>
+    <a href="{% url 'chatbot' %}" class="btn-secondary"><i class="fa-solid fa-comments"></i> Ask AI Advisor</a>
+  </div>
+</div>
+{% endblock %}

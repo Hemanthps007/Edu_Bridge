@@ -1,0 +1,6 @@
+/* StudyBridge — supplemental styles */
+@keyframes shimmer{0%{background-position:-800px 0}100%{background-position:800px 0}}
+.shimmer{background:linear-gradient(90deg,rgba(255,255,255,.02) 25%,rgba(255,255,255,.05) 50%,rgba(255,255,255,.02) 75%);background-size:800px 100%;animation:shimmer 2s infinite}
+.grad-border{position:relative;border-radius:16px}
+.grad-border::before{content:'';position:absolute;inset:-1px;border-radius:17px;background:linear-gradient(135deg,rgba(14,165,233,.4),rgba(16,185,129,.25),transparent);z-index:-1}
+input[type="checkbox"]{accent-color:#0EA5E9;cursor:pointer}

@@ -4,21 +4,21 @@
 <div style="max-width:800px;margin:0 auto;padding:32px 24px;">
   <div style="text-align:center;margin-bottom:40px;" data-aos="fade-up">
     <span class="badge badge-blue" style="margin-bottom:16px;padding:6px 14px;"><i class="fa-solid fa-robot"></i> AI-Powered</span>
-    <h1 style="font-size:2.4rem;font-weight:900;color:#fff;margin:0 0 12px;">Career <span class="grad-text">Navigator</span></h1>
-    <p style="color:#64748B;max-width:520px;margin:0 auto;">Tell us about your profile and goals. Our AI will recommend the best universities and programs with real admission probabilities.</p>
+    <h1 style="font-size:2.4rem;font-weight:900;color:#0F172A;margin:0 0 12px;">Career <span class="grad-text">Navigator</span></h1>
+    <p style="color:#475569;max-width:520px;margin:0 auto;">Tell us about your profile and goals. Our AI will recommend the best universities and programs with real admission probabilities.</p>
   </div>
   <div class="glass" style="border-radius:20px;padding:32px;" data-aos="fade-up" data-aos-delay="100">
     <form method="post" action="{% url 'navigator_result' %}" style="display:flex;flex-direction:column;gap:32px;">
       {% csrf_token %}
 
       <div>
-        <h2 style="font-weight:700;color:#fff;font-size:1.05rem;margin:0 0 16px;display:flex;align-items:center;gap:8px;">
-          <span style="width:28px;height:28px;border-radius:8px;background:#0EA5E9;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;">1</span>
+        <h2 style="font-weight:700;color:#0F172A;font-size:1.05rem;margin:0 0 16px;display:flex;align-items:center;gap:8px;">
+          <span style="width:28px;height:28px;border-radius:8px;background:#0EA5E9;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#0F172A;">1</span>
           Academic Background
         </h2>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
           <div>
-            <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Field of Study</label>
+            <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Field of Study</label>
             <select name="field" class="inp">
               <option value="Computer Science">Computer Science / IT</option>
               <option value="Business Administration">Business Administration</option>
@@ -28,49 +28,49 @@
             </select>
           </div>
           <div>
-            <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">GPA (out of 4.0)</label>
+            <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">GPA (out of 4.0)</label>
             <input type="number" name="gpa" step="0.1" min="2.0" max="4.0" value="{{ profile.gpa|default:'3.2' }}" class="inp" placeholder="3.2"/>
           </div>
           <div>
-            <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">GRE Score (260-340)</label>
+            <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">GRE Score (260-340)</label>
             <input type="number" name="gre_score" min="260" max="340" value="310" class="inp"/>
           </div>
           <div>
-            <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">IELTS Score (5.0-9.0)</label>
+            <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">IELTS Score (5.0-9.0)</label>
             <input type="number" name="ielts" step="0.5" min="5.0" max="9.0" value="7.0" class="inp"/>
           </div>
         </div>
       </div>
 
       <div>
-        <h2 style="font-weight:700;color:#fff;font-size:1.05rem;margin:0 0 16px;display:flex;align-items:center;gap:8px;">
-          <span style="width:28px;height:28px;border-radius:8px;background:#10B981;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;">2</span>
+        <h2 style="font-weight:700;color:#0F172A;font-size:1.05rem;margin:0 0 16px;display:flex;align-items:center;gap:8px;">
+          <span style="width:28px;height:28px;border-radius:8px;background:#10B981;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#0F172A;">2</span>
           Experience &amp; Achievements
         </h2>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;">
           <div>
-            <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Work Experience (yrs)</label>
+            <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Work Experience (yrs)</label>
             <input type="number" name="work_exp" min="0" max="10" value="0" class="inp"/>
           </div>
           <div>
-            <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Research Papers</label>
+            <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Research Papers</label>
             <input type="number" name="research_papers" min="0" max="20" value="0" class="inp"/>
           </div>
           <div>
-            <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Internships</label>
+            <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Internships</label>
             <input type="number" name="internships" min="0" max="10" value="0" class="inp"/>
           </div>
         </div>
       </div>
 
       <div>
-        <h2 style="font-weight:700;color:#fff;font-size:1.05rem;margin:0 0 16px;display:flex;align-items:center;gap:8px;">
-          <span style="width:28px;height:28px;border-radius:8px;background:#F97316;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;">3</span>
+        <h2 style="font-weight:700;color:#0F172A;font-size:1.05rem;margin:0 0 16px;display:flex;align-items:center;gap:8px;">
+          <span style="width:28px;height:28px;border-radius:8px;background:#F97316;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#0F172A;">3</span>
           Preferences
         </h2>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
           <div>
-            <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Preferred Country</label>
+            <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Preferred Country</label>
             <select name="country_pref" class="inp">
               <option value="USA">USA</option>
               <option value="Canada">Canada</option>
@@ -80,7 +80,7 @@
             </select>
           </div>
           <div>
-            <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Annual Budget</label>
+            <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Annual Budget</label>
             <select name="budget" class="inp">
               <option value="low">Under $30,000</option>
               <option value="medium" selected>$30,000 - $50,000</option>
@@ -88,7 +88,7 @@
             </select>
           </div>
           <div style="grid-column:1/-1;">
-            <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Career Goal</label>
+            <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Career Goal</label>
             <input type="text" name="career_goal" placeholder="e.g. Software Engineer at FAANG, Data Scientist, Product Manager" class="inp"/>
           </div>
         </div>

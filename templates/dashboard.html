@@ -24,19 +24,19 @@
 
   <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px;">
     <div>
-      <h1 style="font-size: 1.8rem; font-weight: 900; color: #fff; margin: 0 0 4px;">
+      <h1 style="font-size: 1.8rem; font-weight: 900; color: #0F172A; margin: 0 0 4px;">
         Welcome back, <span class="grad-text">{{ profile.name|default:current_user.name }}</span> &#128075;
       </h1>
-      <p style="color: #64748B; margin: 0;">{{ profile.country_goal|default:"USA" }} &bull; {{ profile.target_program|default:"MS Computer Science" }} &bull; 2026</p>
+      <p style="color: #475569; margin: 0;">{{ profile.country_goal|default:"USA" }} &bull; {{ profile.target_program|default:"MS Computer Science" }} &bull; 2026</p>
     </div>
     <div style="display: flex; gap: 10px;">
       <div class="glass" style="border-radius: 12px; padding: 8px 16px; display: flex; align-items: center; gap: 8px;">
         <span style="color: #FB923C;">&#128293;</span>
-        <span style="font-size: 13px; font-weight: 600; color: #fff;">{{ profile.streak|default:1 }} day streak</span>
+        <span style="font-size: 13px; font-weight: 600; color: #0F172A;">{{ profile.streak|default:1 }} day streak</span>
       </div>
       <div class="glass" style="border-radius: 12px; padding: 8px 16px; display: flex; align-items: center; gap: 8px;">
         <span style="color: #FDE047;">&#11088;</span>
-        <span style="font-size: 13px; font-weight: 600; color: #fff;">{{ profile.points|default:0 }} pts</span>
+        <span style="font-size: 13px; font-weight: 600; color: #0F172A;">{{ profile.points|default:0 }} pts</span>
       </div>
     </div>
   </div>
@@ -44,7 +44,7 @@
   <!-- Journey Progress -->
   <div class="glass" style="border-radius: 20px; padding: 24px; margin-bottom: 24px;" data-aos="fade-up">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-      <h2 style="font-weight: 700; color: #fff; margin: 0; font-size: 1.05rem;">Study Abroad Journey</h2>
+      <h2 style="font-weight: 700; color: #0F172A; margin: 0; font-size: 1.05rem;">Study Abroad Journey</h2>
       <span class="badge badge-blue">{{ progress_pct|default:0 }}% Complete</span>
     </div>
     <div style="height: 8px; border-radius: 4px; background: rgba(14, 165, 233, .12); margin-bottom: 20px;">
@@ -74,19 +74,19 @@
     <!-- Profile Score -->
     <div class="glass" style="border-radius: 20px; padding: 24px;" data-aos="fade-up">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-        <h3 style="font-weight: 600; color: #fff; margin: 0; font-size: 14px;">Profile Strength</h3>
+        <h3 style="font-weight: 600; color: #0F172A; margin: 0; font-size: 14px;">Profile Strength</h3>
         <i class="fa-solid fa-chart-simple" style="color: #0EA5E9;"></i>
       </div>
       <div style="display: flex; align-items: flex-end; gap: 8px; margin-bottom: 12px;">
         <span class="grad-text" style="font-size: 3rem; font-weight: 900; line-height: 1;">{{ assessment.profile_score|default:0 }}</span>
-        <span style="color: #64748B; margin-bottom: 8px;">/100</span>
+        <span style="color: #475569; margin-bottom: 8px;">/100</span>
       </div>
       <div style="height: 6px; border-radius: 3px; background: rgba(14, 165, 233, .12); margin-bottom: 12px;">
         {% with score=assessment.profile_score|default:0 %}
         <div style="height: 6px; border-radius: 3px; background: linear-gradient(90deg, #0EA5E9, #10B981); width: {{ score }}%;"></div>
         {% endwith %}
       </div>
-      <p style="color: #64748B; font-size: 12px; margin: 0 0 16px;">Run the Navigator to boost your score</p>
+      <p style="color: #475569; font-size: 12px; margin: 0 0 16px;">Run the Navigator to boost your score</p>
       <a href="{% url 'career_navigator' %}" class="btn-primary" style="font-size: 13px; padding: 9px 18px;">
         <i class="fa-solid fa-compass"></i> Run AI Navigator
       </a>
@@ -94,22 +94,22 @@
 
     <!-- Quick Stats -->
     <div class="glass" style="border-radius: 20px; padding: 24px;" data-aos="fade-up" data-aos-delay="100">
-      <h3 style="font-weight: 600; color: #fff; margin: 0 0 16px; font-size: 14px;">Quick Stats</h3>
+      <h3 style="font-weight: 600; color: #0F172A; margin: 0 0 16px; font-size: 14px;">Quick Stats</h3>
       <div style="display: flex; flex-direction: column; gap: 0;">
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, .05);">
-          <span style="color: #64748B; font-size: 13px;">&#127891; Target Degree</span>
-          <span style="color: #fff; font-size: 13px; font-weight: 500;">{{ profile.degree|default:"MS" }}</span>
+          <span style="color: #475569; font-size: 13px;">&#127891; Target Degree</span>
+          <span style="color: #0F172A; font-size: 13px; font-weight: 500;">{{ profile.degree|default:"MS" }}</span>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, .05);">
-          <span style="color: #64748B; font-size: 13px;">&#127760; Target Country</span>
-          <span style="color: #fff; font-size: 13px; font-weight: 500;">{{ profile.country_goal|default:"USA" }}</span>
+          <span style="color: #475569; font-size: 13px;">&#127760; Target Country</span>
+          <span style="color: #0F172A; font-size: 13px; font-weight: 500;">{{ profile.country_goal|default:"USA" }}</span>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, .05);">
-          <span style="color: #64748B; font-size: 13px;">&#128202; GPA / CGPA</span>
-          <span style="color: #fff; font-size: 13px; font-weight: 500;">{{ profile.gpa|default:"—" }}</span>
+          <span style="color: #475569; font-size: 13px;">&#128202; GPA / CGPA</span>
+          <span style="color: #0F172A; font-size: 13px; font-weight: 500;">{{ profile.gpa|default:"—" }}</span>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
-          <span style="color: #64748B; font-size: 13px;">&#128176; Loan Status</span>
+          <span style="color: #475569; font-size: 13px;">&#128176; Loan Status</span>
           {% if loan_app.status == 'submitted' %}
           <span class="badge badge-green">Submitted</span>
           {% else %}
@@ -122,7 +122,7 @@
     <!-- Level & Points -->
     <div class="glass" style="border-radius: 20px; padding: 24px;" data-aos="fade-up" data-aos-delay="200">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-        <h3 style="font-weight: 600; color: #fff; margin: 0; font-size: 14px;">Your Level</h3>
+        <h3 style="font-weight: 600; color: #0F172A; margin: 0; font-size: 14px;">Your Level</h3>
         <span class="badge badge-yellow">Level {{ profile.level|default:1 }}</span>
       </div>
       <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
@@ -130,8 +130,8 @@
           {% if profile.points|default:0 >= 100 %}&#127942;{% elif profile.points|default:0 >= 50 %}&#11088;{% else %}&#127807;{% endif %}
         </div>
         <div>
-          <div style="font-size: 1.8rem; font-weight: 900; color: #fff;">{{ profile.points|default:0 }}<span style="color: #64748B; font-size: 1rem; font-weight: 400;"> pts</span></div>
-          <div style="font-size: 12px; color: #64748B;">Earn more by completing tasks</div>
+          <div style="font-size: 1.8rem; font-weight: 900; color: #0F172A;">{{ profile.points|default:0 }}<span style="color: #475569; font-size: 1rem; font-weight: 400;"> pts</span></div>
+          <div style="font-size: 12px; color: #475569;">Earn more by completing tasks</div>
         </div>
       </div>
       <div style="display: flex; flex-wrap: wrap; gap: 6px;">
@@ -143,37 +143,37 @@
   </div>
 
   <!-- Tools -->
-  <h2 style="font-weight: 700; color: #fff; font-size: 1.1rem; margin: 0 0 16px;" data-aos="fade-up">AI Tools</h2>
+  <h2 style="font-weight: 700; color: #0F172A; font-size: 1.1rem; margin: 0 0 16px;" data-aos="fade-up">AI Tools</h2>
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px;">
     <a href="{% url 'career_navigator' %}" class="glass" style="border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; text-decoration: none;" data-aos="fade-up">
       <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(14, 165, 233, .08); border: 1px solid rgba(14, 165, 233, .18); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">&#129517;</div>
-      <div><div style="font-weight: 600; color: #fff; font-size: 13px;">Career Navigator</div><div style="font-size: 11px; color: #64748B;">Find best universities</div></div>
+      <div><div style="font-weight: 600; color: #0F172A; font-size: 13px;">Career Navigator</div><div style="font-size: 11px; color: #475569;">Find best universities</div></div>
     </a>
     <a href="{% url 'roi_calculator' %}" class="glass" style="border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; text-decoration: none;" data-aos="fade-up" data-aos-delay="50">
       <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(16, 185, 129, .08); border: 1px solid rgba(16, 185, 129, .18); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">&#128200;</div>
-      <div><div style="font-weight: 600; color: #fff; font-size: 13px;">ROI Calculator</div><div style="font-size: 11px; color: #64748B;">Calculate returns</div></div>
+      <div><div style="font-weight: 600; color: #0F172A; font-size: 13px;">ROI Calculator</div><div style="font-size: 11px; color: #475569;">Calculate returns</div></div>
     </a>
     <a href="{% url 'admission_predictor' %}" class="glass" style="border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; text-decoration: none;" data-aos="fade-up" data-aos-delay="100">
       <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(249, 115, 22, .08); border: 1px solid rgba(249, 115, 22, .18); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">&#127919;</div>
-      <div><div style="font-weight: 600; color: #fff; font-size: 13px;">Admission Predictor</div><div style="font-size: 11px; color: #64748B;">Check admit chances</div></div>
+      <div><div style="font-weight: 600; color: #0F172A; font-size: 13px;">Admission Predictor</div><div style="font-size: 11px; color: #475569;">Check admit chances</div></div>
     </a>
     <a href="{% url 'loan_estimator' %}" class="glass" style="border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; text-decoration: none;" data-aos="fade-up" data-aos-delay="150">
       <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(14, 165, 233, .08); border: 1px solid rgba(14, 165, 233, .18); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">&#127974;</div>
-      <div><div style="font-weight: 600; color: #fff; font-size: 13px;">Loan Estimator</div><div style="font-size: 11px; color: #64748B;">Check eligibility</div></div>
+      <div><div style="font-weight: 600; color: #0F172A; font-size: 13px;">Loan Estimator</div><div style="font-size: 11px; color: #475569;">Check eligibility</div></div>
     </a>
   </div>
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
     <a href="{% url 'chatbot' %}" class="glass" style="border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; text-decoration: none;" data-aos="fade-up">
       <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(16, 185, 129, .08); border: 1px solid rgba(16, 185, 129, .18); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">&#128172;</div>
-      <div><div style="font-weight: 600; color: #fff; font-size: 13px;">AI Chatbot</div><div style="font-size: 11px; color: #64748B;">Get instant answers</div></div>
+      <div><div style="font-weight: 600; color: #0F172A; font-size: 13px;">AI Chatbot</div><div style="font-size: 11px; color: #475569;">Get instant answers</div></div>
     </a>
     <a href="{% url 'timeline' %}" class="glass" style="border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; text-decoration: none;" data-aos="fade-up" data-aos-delay="100">
       <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(249, 115, 22, .08); border: 1px solid rgba(249, 115, 22, .18); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">&#128197;</div>
-      <div><div style="font-weight: 600; color: #fff; font-size: 13px;">My Timeline</div><div style="font-size: 11px; color: #64748B;">Track all deadlines</div></div>
+      <div><div style="font-weight: 600; color: #0F172A; font-size: 13px;">My Timeline</div><div style="font-size: 11px; color: #475569;">Track all deadlines</div></div>
     </a>
     <a href="{% url 'emi_calculator' %}" class="glass" style="border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; text-decoration: none;" data-aos="fade-up" data-aos-delay="200">
       <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(234, 179, 8, .08); border: 1px solid rgba(234, 179, 8, .18); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">&#128290;</div>
-      <div><div style="font-weight: 600; color: #fff; font-size: 13px;">EMI Calculator</div><div style="font-size: 11px; color: #64748B;">Plan repayments</div></div>
+      <div><div style="font-weight: 600; color: #0F172A; font-size: 13px;">EMI Calculator</div><div style="font-size: 11px; color: #475569;">Plan repayments</div></div>
     </a>
   </div>
 </div>

@@ -4,26 +4,26 @@
 <div class="dot-bg" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:64px 16px;">
   <div style="width:100%;max-width:440px;">
     <div style="text-align:center;margin-bottom:32px;">
-      <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#0EA5E9,#10B981);display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:18px;margin:0 auto 16px;">SB</div>
-      <h1 style="font-size:2rem;font-weight:900;color:#fff;margin:0 0 8px;">Welcome Back</h1>
-      <p style="color:#64748B;">Continue your journey to global education</p>
+      <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#0EA5E9,#10B981);display:flex;align-items:center;justify-content:center;font-weight:900;color:#0F172A;font-size:18px;margin:0 auto 16px;">SB</div>
+      <h1 style="font-size:2rem;font-weight:900;color:#0F172A;margin:0 0 8px;">Welcome Back</h1>
+      <p style="color:#475569;">Continue your journey to global education</p>
     </div>
     <div class="glass" style="border-radius:20px;padding:32px;">
       <form method="post" style="display:flex;flex-direction:column;gap:20px;">
         {% csrf_token %}
         <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Email Address</label>
+          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Email Address</label>
           <input type="email" name="email" required placeholder="you@example.com" class="inp"/>
         </div>
         <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#CBD5E1;margin-bottom:8px;">Password</label>
+          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Password</label>
           <input type="password" name="password" required placeholder="Your password" class="inp"/>
         </div>
         <button type="submit" class="btn-primary" style="justify-content:center;">
           <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
         </button>
       </form>
-      <p style="text-align:center;font-size:13px;color:#64748B;margin-top:20px;">
+      <p style="text-align:center;font-size:13px;color:#475569;margin-top:20px;">
         No account? <a href="{% url 'register' %}" style="color:#0EA5E9;font-weight:600;text-decoration:none;">Create one free</a>
       </p>
     </div>

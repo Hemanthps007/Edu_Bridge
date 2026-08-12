@@ -4,8 +4,8 @@
 {% block content %}
 <div style="max-width:800px;margin:0 auto;padding:32px 24px;">
   <div style="text-align:center;margin-bottom:32px;" data-aos="fade-up">
-    <h1 style="font-size:2.4rem;font-weight:900;color:#fff;margin:0 0 8px;">Loan <span class="grad-text">Application</span></h1>
-    <p style="color:#64748B;">Complete in 4 simple steps. Progress is saved automatically.</p>
+    <h1 style="font-size:2.4rem;font-weight:900;color:#0F172A;margin:0 0 8px;">Loan <span class="grad-text">Application</span></h1>
+    <p style="color:#475569;">Complete in 4 simple steps. Progress is saved automatically.</p>
   </div>
 
   <!-- Step progress -->
@@ -24,7 +24,7 @@
     {% for lbl in "Personal,Academic,Financial,Documents"|split:"," %}
     <div style="position:relative;z-index:2;text-align:center;width:64px;">
       {% if forloop.counter < current_step %}
-      <div style="width:40px;height:40px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:#10B981;border:2px solid #10B981;color:#fff;">&#10003;</div>
+      <div style="width:40px;height:40px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:#10B981;border:2px solid #10B981;color:#0F172A;">&#10003;</div>
       <div style="font-size:11px;font-weight:500;color:#34D399;">{{ lbl }}</div>
       {% elif forloop.counter == current_step %}
       <div style="width:40px;height:40px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:rgba(14,165,233,.12);border:2px solid #0EA5E9;color:#0EA5E9;">{{ forloop.counter }}</div>
@@ -43,23 +43,23 @@
       <input type="hidden" name="step" value="{{ current_step }}"/>
 
       {% if current_step == 1 %}
-      <h2 style="font-weight:700;color:#fff;font-size:1.2rem;margin:0;">Personal Information</h2>
+      <h2 style="font-weight:700;color:#0F172A;font-size:1.2rem;margin:0;">Personal Information</h2>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Full Name</label><input type="text" name="full_name" value="{{ existing.full_name|default:'' }}" required class="inp"/></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Date of Birth</label><input type="date" name="dob" value="{{ existing.dob|default:'' }}" class="inp"/></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">PAN Number</label><input type="text" name="pan" value="{{ existing.pan|default:'' }}" placeholder="ABCDE1234F" class="inp"/></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Aadhaar Number</label><input type="text" name="aadhaar" value="{{ existing.aadhaar|default:'' }}" placeholder="1234 5678 9012" class="inp"/></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Mobile</label><input type="tel" name="mobile" value="{{ existing.mobile|default:'' }}" class="inp"/></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Email</label><input type="email" name="email_apply" value="{{ existing.email_apply|default:'' }}" class="inp"/></div>
-        <div style="grid-column:1/-1;"><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Residential Address</label><textarea name="address" rows="2" class="inp" placeholder="Full address">{{ existing.address|default:'' }}</textarea></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Full Name</label><input type="text" name="full_name" value="{{ existing.full_name|default:'' }}" required class="inp"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Date of Birth</label><input type="date" name="dob" value="{{ existing.dob|default:'' }}" class="inp"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">PAN Number</label><input type="text" name="pan" value="{{ existing.pan|default:'' }}" placeholder="ABCDE1234F" class="inp"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Aadhaar Number</label><input type="text" name="aadhaar" value="{{ existing.aadhaar|default:'' }}" placeholder="1234 5678 9012" class="inp"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Mobile</label><input type="tel" name="mobile" value="{{ existing.mobile|default:'' }}" class="inp"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Email</label><input type="email" name="email_apply" value="{{ existing.email_apply|default:'' }}" class="inp"/></div>
+        <div style="grid-column:1/-1;"><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Residential Address</label><textarea name="address" rows="2" class="inp" placeholder="Full address">{{ existing.address|default:'' }}</textarea></div>
       </div>
 
       {% elif current_step == 2 %}
-      <h2 style="font-weight:700;color:#fff;font-size:1.2rem;margin:0;">Academic Details</h2>
+      <h2 style="font-weight:700;color:#0F172A;font-size:1.2rem;margin:0;">Academic Details</h2>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Admitted University</label><input type="text" name="admit_university" value="{{ existing.admit_university|default:'' }}" class="inp" placeholder="Georgia Tech"/></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Program</label><input type="text" name="admit_program" value="{{ existing.admit_program|default:'' }}" placeholder="MS Computer Science" class="inp"/></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Country</label>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Admitted University</label><input type="text" name="admit_university" value="{{ existing.admit_university|default:'' }}" class="inp" placeholder="Georgia Tech"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Program</label><input type="text" name="admit_program" value="{{ existing.admit_program|default:'' }}" placeholder="MS Computer Science" class="inp"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Country</label>
           <select name="admit_country" class="inp">
             <option value="USA"       {% if existing.admit_country == 'USA'       %}selected{% endif %}>USA</option>
             <option value="Canada"    {% if existing.admit_country == 'Canada'    %}selected{% endif %}>Canada</option>
@@ -67,45 +67,45 @@
             <option value="Germany"   {% if existing.admit_country == 'Germany'   %}selected{% endif %}>Germany</option>
             <option value="Australia" {% if existing.admit_country == 'Australia' %}selected{% endif %}>Australia</option>
           </select></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Duration</label>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Duration</label>
           <select name="admit_duration" class="inp"><option value="1">1 yr</option><option value="2" selected>2 yrs</option><option value="3">3 yrs</option></select></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Annual Tuition (USD)</label><input type="number" name="admit_tuition" value="{{ existing.admit_tuition|default:'' }}" class="inp" placeholder="35000"/></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">10th Standard %</label><input type="number" name="marks_10th" value="{{ existing.marks_10th|default:'' }}" step="0.1" max="100" class="inp"/></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">12th Standard %</label><input type="number" name="marks_12th" value="{{ existing.marks_12th|default:'' }}" step="0.1" max="100" class="inp"/></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">UG GPA (4.0 scale)</label><input type="number" name="ug_gpa" value="{{ existing.ug_gpa|default:'' }}" step="0.01" max="4" class="inp"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Annual Tuition (USD)</label><input type="number" name="admit_tuition" value="{{ existing.admit_tuition|default:'' }}" class="inp" placeholder="35000"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">10th Standard %</label><input type="number" name="marks_10th" value="{{ existing.marks_10th|default:'' }}" step="0.1" max="100" class="inp"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">12th Standard %</label><input type="number" name="marks_12th" value="{{ existing.marks_12th|default:'' }}" step="0.1" max="100" class="inp"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">UG GPA (4.0 scale)</label><input type="number" name="ug_gpa" value="{{ existing.ug_gpa|default:'' }}" step="0.01" max="4" class="inp"/></div>
       </div>
 
       {% elif current_step == 3 %}
-      <h2 style="font-weight:700;color:#fff;font-size:1.2rem;margin:0;">Financial Details</h2>
+      <h2 style="font-weight:700;color:#0F172A;font-size:1.2rem;margin:0;">Financial Details</h2>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Loan Required (INR)</label><input type="number" name="loan_amount" value="{{ existing.loan_amount|default:'' }}" class="inp" placeholder="4500000"/></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Preferred Tenure</label>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Loan Required (INR)</label><input type="number" name="loan_amount" value="{{ existing.loan_amount|default:'' }}" class="inp" placeholder="4500000"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Preferred Tenure</label>
           <select name="tenure_pref" class="inp"><option>5 years</option><option>7 years</option><option selected>10 years</option><option>15 years</option></select></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Co-applicant Name</label><input type="text" name="co_name" value="{{ existing.co_name|default:'' }}" class="inp"/></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Relation</label>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Co-applicant Name</label><input type="text" name="co_name" value="{{ existing.co_name|default:'' }}" class="inp"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Relation</label>
           <select name="co_relation" class="inp"><option>Father</option><option>Mother</option><option>Spouse</option><option>Sibling</option></select></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Co-applicant Income (INR/yr)</label><input type="number" name="co_income_app" value="{{ existing.co_income_app|default:'' }}" class="inp"/></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Employment Type</label>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Co-applicant Income (INR/yr)</label><input type="number" name="co_income_app" value="{{ existing.co_income_app|default:'' }}" class="inp"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Employment Type</label>
           <select name="co_employment" class="inp"><option>Salaried (Govt)</option><option>Salaried (Private)</option><option>Self-Employed</option></select></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Collateral?</label>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Collateral?</label>
           <select name="collateral" class="inp"><option value="yes">Yes - Property / FD</option><option value="no">No Collateral</option></select></div>
-        <div><label style="display:block;font-size:13px;color:#CBD5E1;margin-bottom:8px;">Property Value (INR)</label><input type="number" name="property_value" value="{{ existing.property_value|default:'0' }}" class="inp"/></div>
+        <div><label style="display:block;font-size:13px;color:#475569;margin-bottom:8px;">Property Value (INR)</label><input type="number" name="property_value" value="{{ existing.property_value|default:'0' }}" class="inp"/></div>
       </div>
 
       {% elif current_step == 4 %}
-      <h2 style="font-weight:700;color:#fff;font-size:1.2rem;margin:0;">Document Checklist</h2>
-      <p style="color:#64748B;font-size:13px;margin:0;">Tick all documents you have ready to upload after submission.</p>
+      <h2 style="font-weight:700;color:#0F172A;font-size:1.2rem;margin:0;">Document Checklist</h2>
+      <p style="color:#475569;font-size:13px;margin:0;">Tick all documents you have ready to upload after submission.</p>
       <div style="display:flex;flex-direction:column;gap:12px;">
-        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_1" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#CBD5E1;">Admission / Offer Letter from University</span></label>
-        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_2" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#CBD5E1;">Tuition Fee Structure from University</span></label>
-        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_3" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#CBD5E1;">Passport (valid minimum 2 years)</span></label>
-        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_4" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#CBD5E1;">PAN Card of Student and Co-applicant</span></label>
-        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_5" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#CBD5E1;">Aadhaar Card of Student and Co-applicant</span></label>
-        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_6" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#CBD5E1;">10th and 12th Mark Sheets and Certificates</span></label>
-        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_7" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#CBD5E1;">Undergraduate Degree Certificate and Transcripts</span></label>
-        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_8" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#CBD5E1;">Co-applicant Income Proof (3 years ITR or salary slips)</span></label>
-        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_9" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#CBD5E1;">Co-applicant Bank Statements (last 6 months)</span></label>
-        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_10" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#CBD5E1;">Property Documents (if offering as collateral)</span></label>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_1" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#475569;">Admission / Offer Letter from University</span></label>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_2" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#475569;">Tuition Fee Structure from University</span></label>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_3" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#475569;">Passport (valid minimum 2 years)</span></label>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_4" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#475569;">PAN Card of Student and Co-applicant</span></label>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_5" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#475569;">Aadhaar Card of Student and Co-applicant</span></label>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_6" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#475569;">10th and 12th Mark Sheets and Certificates</span></label>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_7" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#475569;">Undergraduate Degree Certificate and Transcripts</span></label>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_8" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#475569;">Co-applicant Income Proof (3 years ITR or salary slips)</span></label>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_9" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#475569;">Co-applicant Bank Statements (last 6 months)</span></label>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><input type="checkbox" name="doc_10" style="accent-color:#0EA5E9;width:16px;height:16px;flex-shrink:0;"/><span style="font-size:13px;color:#475569;">Property Documents (if offering as collateral)</span></label>
       </div>
       <div class="glass-orange" style="border-radius:12px;padding:16px;">
         <p style="font-size:13px;color:#FB923C;margin:0;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:8px;"></i>By submitting you consent to a soft credit check and confirm all information is accurate.</p>

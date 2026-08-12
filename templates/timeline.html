@@ -4,8 +4,8 @@
 <div style="max-width:900px;margin:0 auto;padding:32px 24px;">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:40px;">
     <div>
-      <h1 style="font-size:2rem;font-weight:900;color:#fff;margin:0 0 4px;">Application <span class="grad-text">Timeline</span></h1>
-      <p style="color:#64748B;margin:0;">Fall 2026 Intake &bull; {{ country }}</p>
+      <h1 style="font-size:2rem;font-weight:900;color:#0F172A;margin:0 0 4px;">Application <span class="grad-text">Timeline</span></h1>
+      <p style="color:#475569;margin:0;">Fall 2026 Intake &bull; {{ country }}</p>
     </div>
     <span class="badge badge-blue">{{ events|length }} Milestones</span>
   </div>
@@ -49,7 +49,7 @@
               <!--
                 BUG 6 FIX: was a multiline style attribute:
                   style="font-weight:600;font-size:14px;
-                      {% if ev.category == 'milestone' %}color:#FB923C;{% else %}color:#fff;{% endif %}"
+                      {% if ev.category == 'milestone' %}color:#FB923C;{% else %}color:#0F172A;{% endif %}"
                 That produces HTML with a literal newline + spaces inside the style value —
                 invalid attribute syntax that strict HTML parsers reject.
 
@@ -58,9 +58,9 @@
               {% if ev.category == 'milestone' %}
               <div style="font-weight:600;font-size:14px;color:#FB923C;">{{ ev.label }}</div>
               {% else %}
-              <div style="font-weight:600;font-size:14px;color:#fff;">{{ ev.label }}</div>
+              <div style="font-weight:600;font-size:14px;color:#0F172A;">{{ ev.label }}</div>
               {% endif %}
-              <div style="font-size:12px;color:#64748B;margin-top:2px;">{{ ev.desc }}</div>
+              <div style="font-size:12px;color:#475569;margin-top:2px;">{{ ev.desc }}</div>
             </div>
             {% if ev.category == 'finance' %}<span class="badge badge-green">Finance</span>
             {% elif ev.category == 'test' %}<span class="badge badge-yellow">Test</span>
@@ -78,8 +78,8 @@
 
   <!-- CTA -->
   <div class="glass" style="border-radius:20px;padding:40px;text-align:center;margin-top:48px;" data-aos="fade-up">
-    <h3 style="font-weight:700;color:#fff;margin:0 0 8px;">Ready to Fund Your Journey?</h3>
-    <p style="color:#64748B;font-size:13px;margin:0 0 24px;">Start your education loan application early — the process takes 4-8 weeks from start to disbursement.</p>
+    <h3 style="font-weight:700;color:#0F172A;margin:0 0 8px;">Ready to Fund Your Journey?</h3>
+    <p style="color:#475569;font-size:13px;margin:0 0 24px;">Start your education loan application early — the process takes 4-8 weeks from start to disbursement.</p>
     <a href="{% url 'loan_application' %}" class="btn-teal">
       <i class="fa-solid fa-file-signature"></i> Apply for Education Loan
     </a>

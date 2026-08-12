@@ -5,13 +5,13 @@
   <div
     style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px;">
     <div>
-      <h1 style="font-size: 2rem; font-weight: 900; color: #fff; margin: 0 0 4px;">AI <span
+      <h1 style="font-size: 2rem; font-weight: 900; color: #0F172A; margin: 0 0 4px;">AI <span
           class="grad-text">Recommendations</span></h1>
-      <p style="color: #64748B; margin: 0;">Based on your profile &bull; {{ assessment.generated_at|slice:":10" }}</p>
+      <p style="color: #475569; margin: 0;">Based on your profile &bull; {{ assessment.generated_at|slice:":10" }}</p>
     </div>
     <div style="display: flex; align-items: center; gap: 12px;">
       <div class="glass" style="border-radius: 12px; padding: 12px 20px; text-align: center;">
-        <div style="font-size: 11px; color: #64748B; margin-bottom: 2px;">Profile Score</div>
+        <div style="font-size: 11px; color: #475569; margin-bottom: 2px;">Profile Score</div>
         <div class="grad-text" style="font-size: 1.6rem; font-weight: 900;">{{ assessment.profile_score }}</div>
       </div>
       <a href="{% url 'career_navigator' %}" class="btn-secondary" style="font-size: 13px; padding: 9px 18px;">
@@ -20,7 +20,7 @@
     </div>
   </div>
 
-  <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; font-size: 12px; color: #64748B;">
+  <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; font-size: 12px; color: #475569;">
     <span><span class="tag-safety">Safety</span> &nbsp;65%+ admit chance</span>
     <span><span class="tag-target">Target</span> &nbsp;45–65% admit chance</span>
     <span><span class="tag-reach">Reach</span> &nbsp;&lt;45% admit chance</span>
@@ -36,11 +36,11 @@
           &#127963;</div>
         <div style="flex: 1; min-width: 200px;">
           <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
-            <h3 style="font-weight: 700; color: #fff; font-size: 1.1rem; margin: 0;">{{ uni.name }}</h3>
+            <h3 style="font-weight: 700; color: #0F172A; font-size: 1.1rem; margin: 0;">{{ uni.name }}</h3>
             <span class="tag-{{ uni.category }}">{{ uni.category|title }}</span>
             <span style="color: #475569; font-size: 13px;">#{{ uni.rank }} in field</span>
           </div>
-          <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: #64748B;">
+          <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: #475569;">
             <span><i class="fa-solid fa-dollar-sign" style="color: #34D399; font-size: 11px;"></i> ${{
               uni.tuition|floatformat:0 }}/yr tuition</span>
             <span><i class="fa-solid fa-users" style="color: #FB923C; font-size: 11px;"></i> {{ uni.accept_rate }}%
@@ -59,7 +59,7 @@
           {% else %}
           <div style="font-size: 2rem; font-weight: 900; color: #F87171;">{{ uni.probability }}%</div>
           {% endif %}
-          <div style="font-size: 11px; color: #64748B;">admit chance</div>
+          <div style="font-size: 11px; color: #475569;">admit chance</div>
           <div
             style="margin-top: 8px; width: 96px; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .07);">
             {% if uni.probability >= 65 %}

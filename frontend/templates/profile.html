@@ -75,5 +75,33 @@
       </div>
     </form>
   </div>
+
+  <div class="glass" style="border-radius:20px;padding:32px;margin-top:24px;">
+    <h2 style="font-size:1.4rem;font-weight:700;color:#0F172A;margin:0 0 20px;">Recent Login Activity</h2>
+    {% if logins %}
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;text-align:left;font-size:14px;">
+          <thead>
+            <tr style="border-bottom:1px solid rgba(15, 23, 42, 0.08);color:#475569;">
+              <th style="padding:10px 8px;">Date & Time</th>
+              <th style="padding:10px 8px;">IP Address</th>
+              <th style="padding:10px 8px;">Device/Browser</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for login in logins %}
+              <tr style="border-bottom:1px solid rgba(15, 23, 42, 0.04);">
+                <td style="padding:12px 8px;font-family:monospace;">{{ login.login_time }}</td>
+                <td style="padding:12px 8px;">{{ login.ip_address|default:"N/A" }}</td>
+                <td style="padding:12px 8px;font-size:12px;color:#475569;">{{ login.user_agent|truncatechars:80|default:"N/A" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color:#64748B;font-size:14px;margin:0;">No recent logins recorded.</p>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}

@@ -12,3 +12,5 @@ firebase_credentials.json
 Thumbs.db
 firebase_credentials_template.json
 *.json
+!vercel.json
+!firebase_credentials_template.json

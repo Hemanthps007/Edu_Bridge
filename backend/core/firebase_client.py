@@ -73,7 +73,10 @@ from contextlib import contextmanager
 
 @contextmanager
 def get_db_conn():
-    db_path = os.path.join(settings.BASE_DIR, 'db.sqlite3')
+    if os.environ.get('VERCEL') == '1':
+        db_path = '/tmp/db.sqlite3'
+    else:
+        db_path = os.path.join(settings.BASE_DIR, 'db.sqlite3')
     conn = sqlite3.connect(db_path)
     try:
         yield conn

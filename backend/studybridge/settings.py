@@ -53,10 +53,13 @@ WSGI_APPLICATION = 'studybridge.wsgi.application'
 # No ORM — using Firebase Firestore for all data
 DATABASES = {}
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.file'
-SESSION_FILE_PATH = BASE_DIR / '.sessions'
+if os.getenv('VERCEL') == '1':
+    SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+else:
+    SESSION_ENGINE = 'django.contrib.sessions.backends.file'
+    SESSION_FILE_PATH = BASE_DIR / '.sessions'
+    SESSION_FILE_PATH.mkdir(exist_ok=True)
 SESSION_COOKIE_AGE = 86400 * 7
-SESSION_FILE_PATH.mkdir(exist_ok=True)
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 

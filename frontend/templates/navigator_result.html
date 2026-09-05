@@ -41,14 +41,10 @@
             <span style="color: #475569; font-size: 13px;">#{{ uni.rank }} in field</span>
           </div>
           <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: #64748B;">
-            <span><i class="fa-solid fa-dollar-sign" style="color: #34D399; font-size: 11px;"></i> ${{
-              uni.tuition|floatformat:0 }}/yr tuition</span>
-            <span><i class="fa-solid fa-users" style="color: #FB923C; font-size: 11px;"></i> {{ uni.accept_rate }}%
-              acceptance</span>
-            <span><i class="fa-solid fa-graduation-cap" style="color: #0EA5E9; font-size: 11px;"></i> Avg GPA {{
-              uni.avg_gpa }}</span>
-            {% if uni.avg_gre %}<span><i class="fa-solid fa-pencil" style="color: #FDE047; font-size: 11px;"></i> Avg
-              GRE {{ uni.avg_gre }}</span>{% endif %}
+            <span><i class="fa-solid fa-dollar-sign" style="color: #34D399; font-size: 11px;"></i> ${{ uni.tuition|floatformat:0 }}/yr tuition</span>
+            <span><i class="fa-solid fa-users" style="color: #FB923C; font-size: 11px;"></i> {{ uni.accept_rate }}% acceptance</span>
+            <span><i class="fa-solid fa-graduation-cap" style="color: #0EA5E9; font-size: 11px;"></i> Avg GPA {{ uni.avg_gpa }}</span>
+            {% if uni.avg_gre %}<span><i class="fa-solid fa-pencil" style="color: #FDE047; font-size: 11px;"></i> Avg GRE {{ uni.avg_gre }}</span>{% endif %}
           </div>
         </div>
         <div style="text-align: right; flex-shrink: 0;">

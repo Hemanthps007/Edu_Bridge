@@ -8,7 +8,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-studybridge-dev-key-change-in-prod-2025')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+allowed_hosts_env = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.vercel.app')
+ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()]
+
+if os.getenv('VERCEL') == '1' or os.getenv('VERCEL_URL'):
+    if '.vercel.app' not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append('.vercel.app')
+    vercel_url = os.getenv('VERCEL_URL')
+    if vercel_url and vercel_url not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(vercel_url)
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.vercel.app',
+    'https://*.now.sh',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+csrf_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS')
+if csrf_origins_env:
+    CSRF_TRUSTED_ORIGINS.extend([origin.strip() for origin in csrf_origins_env.split(',') if origin.strip()])
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',

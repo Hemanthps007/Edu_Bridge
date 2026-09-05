@@ -6,7 +6,7 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-studybridge-dev-key-change-in-prod-2025')
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-studybridge-dev-key-change-in-prod-2026')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 allowed_hosts_env = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.vercel.app')
 ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()]

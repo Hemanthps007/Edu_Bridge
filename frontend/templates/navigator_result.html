@@ -1,89 +1,127 @@
 {% extends 'base.html' %}
-{% block title %}Navigator Results{% endblock %}
+{% block title %}Career Recommendations{% endblock %}
 {% block content %}
-<div style="max-width: 1000px; margin: 0 auto; padding: 32px 24px;">
-  <div
-    style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px;">
+<div class="max-w-5xl mx-auto px-4 py-8 space-y-8">
+
+  <!-- Header Banner -->
+  <div class="glass rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
     <div>
-      <h1 style="font-size: 2rem; font-weight: 900; color: #fff; margin: 0 0 4px;">AI <span
-          class="grad-text">Recommendations</span></h1>
-      <p style="color: #64748B; margin: 0;">Based on your profile &bull; {{ assessment.generated_at|slice:":10" }}</p>
+      <span class="badge badge-blue mb-2">Holland Code: {{ result.holland_code|default:"IRC" }}</span>
+      <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Your Career Pathways &amp; Degree Roadmaps</h1>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1">
+        Based on your profile, RIASEC psychometric scores, and mathematical problem-solving index.
+      </p>
     </div>
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <div class="glass" style="border-radius: 12px; padding: 12px 20px; text-align: center;">
-        <div style="font-size: 11px; color: #64748B; margin-bottom: 2px;">Profile Score</div>
-        <div class="grad-text" style="font-size: 1.6rem; font-weight: 900;">{{ assessment.profile_score }}</div>
-      </div>
-      <a href="{% url 'career_navigator' %}" class="btn-secondary" style="font-size: 13px; padding: 9px 18px;">
-        <i class="fa-solid fa-refresh"></i> Retake
+    <div class="flex items-center gap-2">
+      <a href="{% url 'career_assessment' %}" class="btn-secondary text-xs">
+        <i class="fa-solid fa-arrows-rotate"></i> Retake Assessment
+      </a>
+      <a href="{% url 'university_search' %}" class="btn-primary text-xs">
+        <i class="fa-solid fa-building-columns"></i> Find Universities
       </a>
     </div>
   </div>
 
-  <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; font-size: 12px; color: #64748B;">
-    <span><span class="tag-safety">Safety</span> &nbsp;65%+ admit chance</span>
-    <span><span class="tag-target">Target</span> &nbsp;45–65% admit chance</span>
-    <span><span class="tag-reach">Reach</span> &nbsp;&lt;45% admit chance</span>
+  <!-- Trait Breakdown Card -->
+  <div class="glass rounded-xl p-5 border border-slate-200">
+    <div class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">RIASEC Personality Dimension Distribution</div>
+    <div class="grid grid-cols-2 sm:grid-cols-6 gap-3 text-center text-xs">
+      <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+        <div class="font-bold text-slate-900 text-sm">{{ result.scores.I|default:24 }} pts</div>
+        <div class="text-[11px] text-slate-500">Investigative (I)</div>
+      </div>
+      <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+        <div class="font-bold text-slate-900 text-sm">{{ result.scores.R|default:18 }} pts</div>
+        <div class="text-[11px] text-slate-500">Realistic (R)</div>
+      </div>
+      <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+        <div class="font-bold text-slate-900 text-sm">{{ result.scores.C|default:21 }} pts</div>
+        <div class="text-[11px] text-slate-500">Conventional (C)</div>
+      </div>
+      <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+        <div class="font-bold text-slate-900 text-sm">{{ result.scores.E|default:19 }} pts</div>
+        <div class="text-[11px] text-slate-500">Enterprising (E)</div>
+      </div>
+      <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+        <div class="font-bold text-slate-900 text-sm">{{ result.scores.S|default:15 }} pts</div>
+        <div class="text-[11px] text-slate-500">Social (S)</div>
+      </div>
+      <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+        <div class="font-bold text-slate-900 text-sm">{{ result.scores.A|default:12 }} pts</div>
+        <div class="text-[11px] text-slate-500">Artistic (A)</div>
+      </div>
+    </div>
   </div>
 
-  <div style="display:flex;flex-direction:column;gap:16px;">
-    {% for uni in assessment.recommendations %}
-    <div class="glass" style="border-radius: 20px; padding: 24px;" data-aos="fade-up"
-      data-aos-delay="{{ forloop.counter0 }}50">
-      <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
-        <div
-          style="width: 56px; height: 56px; border-radius: 16px; background: rgba(14, 165, 233, .07); border: 1px solid rgba(14, 165, 233, .14); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
-          &#127963;</div>
-        <div style="flex: 1; min-width: 200px;">
-          <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
-            <h3 style="font-weight: 700; color: #fff; font-size: 1.1rem; margin: 0;">{{ uni.name }}</h3>
-            <span class="tag-{{ uni.category }}">{{ uni.category|title }}</span>
-            <span style="color: #475569; font-size: 13px;">#{{ uni.rank }} in field</span>
+  <!-- Detailed Career Cards -->
+  <div class="space-y-5">
+    {% for career in result.recommendations %}
+    <div class="glass glass-hover rounded-2xl p-6 shadow-sm border border-slate-200">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 mb-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-blue font-bold text-xs">{{ career.match_pct }}% Match</span>
+            <span class="text-xs font-semibold text-slate-400">&bull; {{ career.match_field }}</span>
           </div>
-          <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: #64748B;">
-            <span><i class="fa-solid fa-dollar-sign" style="color: #34D399; font-size: 11px;"></i> ${{ uni.tuition|floatformat:0 }}/yr tuition</span>
-            <span><i class="fa-solid fa-users" style="color: #FB923C; font-size: 11px;"></i> {{ uni.accept_rate }}% acceptance</span>
-            <span><i class="fa-solid fa-graduation-cap" style="color: #0EA5E9; font-size: 11px;"></i> Avg GPA {{ uni.avg_gpa }}</span>
-            {% if uni.avg_gre %}<span><i class="fa-solid fa-pencil" style="color: #FDE047; font-size: 11px;"></i> Avg GRE {{ uni.avg_gre }}</span>{% endif %}
+          <h2 class="text-lg font-bold text-slate-900">{{ career.title }}</h2>
+        </div>
+        <div class="text-right">
+          <div class="text-xs font-semibold text-slate-400">Market Compensation Range</div>
+          <div class="font-bold text-sm text-slate-900">{{ career.salary_range_usd }} <span class="text-slate-400 font-normal">({{ career.salary_range_inr }})</span></div>
+        </div>
+      </div>
+
+      <div class="space-y-3 text-xs leading-relaxed">
+        <div>
+          <span class="font-bold text-slate-900">Why It Matches Your Profile: </span>
+          <span class="text-slate-600">{{ career.why }}</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+            <div class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-screwdriver-wrench text-slate-400 text-xs"></i> Core Required Skills
+            </div>
+            <div class="flex flex-wrap gap-1.5 mt-1.5">
+              {% for skill in career.skills_required %}
+              <span class="px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-700 font-medium text-[11px]">{{ skill }}</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+            <div class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-graduation-cap text-slate-400 text-xs"></i> Expected Degree Prerequisites
+            </div>
+            <p class="text-slate-600 mt-1">{{ career.expected_education }}</p>
           </div>
         </div>
-        <div style="text-align: right; flex-shrink: 0;">
-          {% if uni.probability >= 65 %}
-          <div style="font-size: 2rem; font-weight: 900; color: #34D399;">{{ uni.probability }}%</div>
-          {% elif uni.probability >= 45 %}
-          <div style="font-size: 2rem; font-weight: 900; color: #FB923C;">{{ uni.probability }}%</div>
-          {% else %}
-          <div style="font-size: 2rem; font-weight: 900; color: #F87171;">{{ uni.probability }}%</div>
-          {% endif %}
-          <div style="font-size: 11px; color: #64748B;">admit chance</div>
-          <div
-            style="margin-top: 8px; width: 96px; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .07);">
-            {% if uni.probability >= 65 %}
-            <div
-              style="height: 6px; border-radius: 3px; background: #10B981; --prob: {{ uni.probability|default:0 }}%; width: var(--prob);">
-            </div>
-            {% elif uni.probability >= 45 %}
-            <div
-              style="height: 6px; border-radius: 3px; background: #F97316; --prob: {{ uni.probability|default:0 }}%; width: var(--prob);">
-            </div>
-            {% else %}
-            <div
-              style="height: 6px; border-radius: 3px; background: #EF4444; --prob: {{ uni.probability|default:0 }}%; width: var(--prob);">
-            </div>
-            {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+          <div>
+            <span class="font-bold text-slate-900">Recommended Courses: </span>
+            <span class="text-slate-600">
+              {% for c in career.recommended_courses %}{{ c }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </span>
           </div>
+          <div>
+            <span class="font-bold text-slate-900">Top Universities: </span>
+            <span class="text-slate-600 font-medium">
+              {% for u in career.top_universities %}{{ u }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </span>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+          <div><i class="fa-solid fa-chart-line text-emerald-600 mr-1"></i> {{ career.demand_growth }}</div>
+          <a href="{% url 'university_search' %}?q={{ career.title|urlencode }}" class="font-semibold text-sky-600 hover:text-sky-700">
+            Explore Aligned Universities <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </a>
         </div>
       </div>
     </div>
     {% endfor %}
   </div>
 
-  <div style="margin-top: 40px; display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;">
-    <a href="{% url 'loan_estimator' %}" class="btn-teal"><i class="fa-solid fa-calculator"></i> Check Loan
-      Eligibility</a>
-    <a href="{% url 'timeline' %}" class="btn-secondary"><i class="fa-solid fa-calendar"></i> View Application
-      Timeline</a>
-    <a href="{% url 'chatbot' %}" class="btn-secondary"><i class="fa-solid fa-comments"></i> Ask AI Advisor</a>
-  </div>
 </div>
 {% endblock %}

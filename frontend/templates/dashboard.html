@@ -1,250 +1,269 @@
 {% extends 'base.html' %}
-{% block title %}Dashboard{% endblock %}
-{% block extra_head %}
-<style>
-  .stage-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-  }
-
-  @media (max-width: 600px) {
-    .stage-grid {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-
-  @media (max-width: 380px) {
-    .stage-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-</style>
-{% endblock %}
+{% block title %}Student Dashboard{% endblock %}
 {% block content %}
-<div style="max-width: 1280px; margin: 0 auto; padding: 32px 24px;">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-  <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px;">
+  <!-- Welcome Banner -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
     <div>
-      <h1 style="font-size: 1.8rem; font-weight: 900; color: #0F172A; margin: 0 0 4px;">
-        Welcome back, <span class="grad-text">{{ profile.name|default:current_user.name|default:"Student" }}</span> &#128075;
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Student Portal</span>
+        <span class="badge badge-slate">Level {{ gamification.level }} &bull; {{ gamification.xp }} XP</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+        Good day, {{ profile.name|default:current_user.name }}
       </h1>
-      <p style="color: #475569; margin: 0;">{{ profile.country_goal|default:"USA" }} &bull; {{ profile.target_program|default:"MS Computer Science" }} &bull; 2026</p>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1">
+        {{ profile.country_goal|default:"USA" }} &bull; {{ profile.target_program|default:"MS Computer Science" }} &bull; Class of 2027
+      </p>
     </div>
-    <div style="display: flex; gap: 10px;">
-      <div class="glass" style="border-radius: 12px; padding: 8px 16px; display: flex; align-items: center; gap: 8px;">
-        <span style="color: #FB923C;">&#128293;</span>
-        <span style="font-size: 13px; font-weight: 600; color: #0F172A;">{{ profile.streak|default:1 }} day
-          streak</span>
+
+    <!-- Quick Stats Pill -->
+    <div class="flex items-center gap-3">
+      <div class="glass px-3.5 py-2 rounded-xl flex items-center gap-3 text-xs">
+        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-fire"></i>
+        </div>
+        <div>
+          <div class="font-bold text-slate-900">{{ profile.streak|default:1 }} Day Streak</div>
+          <div class="text-slate-400 text-[11px]">Consistent Prep</div>
+        </div>
       </div>
-      <div class="glass" style="border-radius: 12px; padding: 8px 16px; display: flex; align-items: center; gap: 8px;">
-        <span style="color: #FDE047;">&#11088;</span>
-        <span style="font-size: 13px; font-weight: 600; color: #0F172A;">{{ profile.points|default:0 }} pts</span>
+      <div class="glass px-3.5 py-2 rounded-xl flex items-center gap-3 text-xs">
+        <div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div>
+          <div class="font-bold text-slate-900">{% if profile.face_auth_enabled %}Face ID Active{% else %}Face ID Inactive{% endif %}</div>
+          <div class="text-slate-400 text-[11px]"><a href="{% url 'profile' %}" class="text-sky-600 hover:underline">Manage</a></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Journey Progress -->
-  <div class="glass" style="border-radius: 20px; padding: 24px; margin-bottom: 24px;" data-aos="fade-up">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-      <h2 style="font-weight: 700; color: #0F172A; margin: 0; font-size: 1.05rem;">Study Abroad Journey</h2>
-      <span class="badge badge-blue">{{ progress_pct|default:0 }}% Complete</span>
-    </div>
-    <div style="height: 8px; border-radius: 4px; background: rgba(14, 165, 233, 0.12); margin-bottom: 20px;">
-      {% with pct=progress_pct|default:0 %}
-      <div id="journeyProgressBar"
-        style="height: 8px; border-radius: 4px; background: linear-gradient(90deg, #0EA5E9, #10B981); width: 0%; transition: width 0.5s;">
+  <!-- Study Abroad Journey Progress Bar -->
+  <div class="glass rounded-2xl p-6 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-route text-slate-500"></i>
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Study Abroad Journey</h2>
       </div>
-      <script>
-        document.getElementById('journeyProgressBar').style.width = '{{ pct }}%';
-      </script>
-      {% endwith %}
+      <span class="badge badge-blue font-semibold">{{ progress_pct }}% Complete</span>
     </div>
-    <div class="stage-grid">
+
+    <!-- Progress Bar -->
+    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mb-6">
+      <div class="bg-slate-900 h-2 rounded-full transition-all duration-500" :style="'width: {{ progress_pct|default:0 }}%'" data-progress="{{ progress_pct|default:0 }}"></div>
+    </div>
+
+    <!-- 7 Stages Horizontal Flow -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
       {% for stage in stages %}
-      <div style="text-align: center;">
-        {% if forloop.counter0 < stage_idx %} <div
-          style="width: 40px; height: 40px; border-radius: 10px; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; background: rgba(16, 185, 129, .15); border: 1px solid rgba(16, 185, 129, .35);">
-          {{ stage.icon }}</div>
-      <div style="font-size: 10px; font-weight: 500; color: #34D399;">{{ stage.label }}</div>
-      {% elif stage.id == current_stage %}
-      <div
-        style="width: 40px; height: 40px; border-radius: 10px; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: 2px solid #0EA5E9; background: rgba(14, 165, 233, .1);">
-        {{ stage.icon }}</div>
-      <div style="font-size: 10px; font-weight: 500; color: #0EA5E9;">{{ stage.label }}</div>
-      {% else %}
-      <div
-        style="width: 40px; height: 40px; border-radius: 10px; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: 1px solid rgba(255, 255, 255, .08); background: rgba(255, 255, 255, .02);">
-        {{ stage.icon }}</div>
-      <div style="font-size: 10px; font-weight: 500; color: #475569;">{{ stage.label }}</div>
-      {% endif %}
-    </div>
-    {% endfor %}
-  </div>
-</div>
-
-<div
-  style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-bottom: 24px;">
-  <!-- Profile Score -->
-  <div class="glass" style="border-radius: 20px; padding: 24px;" data-aos="fade-up">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-      <h3 style="font-weight: 600; color: #0F172A; margin: 0; font-size: 14px;">Profile Strength</h3>
-      <i class="fa-solid fa-chart-simple" style="color: #0EA5E9;"></i>
-    </div>
-      <div style="display: flex; align-items: flex-end; gap: 6px; margin-bottom: 12px;">
-        <span class="grad-text" style="font-size: 1.8rem; font-weight: 800; line-height: 1;">{{ assessment.profile_score|default:0 }}</span>
-        <span style="color: #475569; font-size: 0.95rem; margin-bottom: 2px;">/100</span>
+      <div class="text-center p-2.5 rounded-xl border transition {% if stage_idx > forloop.counter0 %}bg-emerald-50/50 border-emerald-200 text-emerald-700{% elif stage.id == current_stage %}bg-sky-50 border-sky-300 text-sky-800 shadow-sm{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">
+        <div class="w-7 h-7 rounded-lg mx-auto flex items-center justify-center text-xs mb-1.5 {% if stage_idx > forloop.counter0 %}bg-emerald-100 text-emerald-800{% elif stage.id == current_stage %}bg-sky-600 text-white{% else %}bg-slate-200 text-slate-500{% endif %}">
+          <i class="fa-solid {{ stage.icon }}"></i>
+        </div>
+        <div class="text-[11px] font-bold truncate">{{ stage.label }}</div>
       </div>
-    <div style="height: 6px; border-radius: 3px; background: rgba(14, 165, 233, 0.12); margin-bottom: 12px;">
-      {% with score=assessment.profile_score|default:0 %}
-      <div id="profileScoreBar"
-        style="height: 6px; border-radius: 3px; background: linear-gradient(90deg, #0EA5E9, #10B981); width: 0%;"></div>
-      <script>
-        document.getElementById('profileScoreBar').style.width = '{{ score }}%';
-      </script>
-      {% endwith %}
+      {% endfor %}
     </div>
-    <p style="color: #475569; font-size: 12px; margin: 0 0 16px;">Run the Navigator to boost your score</p>
-    <a href="{% url 'career_navigator' %}" class="btn-primary" style="font-size: 13px; padding: 9px 18px;">
-      <i class="fa-solid fa-compass"></i> Run AI Navigator
+  </div>
+
+  <!-- 4 Core Profile Strength Scores -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Academic Strength -->
+    <div class="glass rounded-xl p-5 border border-slate-200">
+      <div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+        <span>Academic Strength</span>
+        <i class="fa-solid fa-graduation-cap text-sky-600"></i>
+      </div>
+      <div class="flex items-baseline gap-1.5 mb-2">
+        <span class="text-2xl font-black text-slate-900">{{ scores.academic_strength }}%</span>
+        <span class="text-xs text-slate-400">Competitive</span>
+      </div>
+      <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+        <div class="bg-sky-600 h-1.5 rounded-full" :style="'width: {{ scores.academic_strength|default:0 }}%'" data-progress="{{ scores.academic_strength|default:0 }}"></div>
+      </div>
+    </div>
+
+    <!-- Financial Readiness -->
+    <div class="glass rounded-xl p-5 border border-slate-200">
+      <div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+        <span>Financial Readiness</span>
+        <i class="fa-solid fa-wallet text-emerald-600"></i>
+      </div>
+      <div class="flex items-baseline gap-1.5 mb-2">
+        <span class="text-2xl font-black text-slate-900">{{ scores.financial_readiness }}%</span>
+        <span class="text-xs text-slate-400">Budget Indexed</span>
+      </div>
+      <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+        <div class="bg-emerald-600 h-1.5 rounded-full" :style="'width: {{ scores.financial_readiness|default:0 }}%'" data-progress="{{ scores.financial_readiness|default:0 }}"></div>
+      </div>
+    </div>
+
+    <!-- Career Clarity -->
+    <div class="glass rounded-xl p-5 border border-slate-200">
+      <div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+        <span>Career Clarity</span>
+        <i class="fa-solid fa-compass text-amber-600"></i>
+      </div>
+      <div class="flex items-baseline gap-1.5 mb-2">
+        <span class="text-2xl font-black text-slate-900">{{ scores.career_clarity }}%</span>
+        <span class="text-xs text-slate-400">RIASEC Verified</span>
+      </div>
+      <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+        <div class="bg-amber-600 h-1.5 rounded-full" :style="'width: {{ scores.career_clarity|default:0 }}%'" data-progress="{{ scores.career_clarity|default:0 }}"></div>
+      </div>
+    </div>
+
+    <!-- Overall Admission Readiness -->
+    <div class="glass rounded-xl p-5 border border-slate-200 bg-slate-900 text-white">
+      <div class="flex items-center justify-between text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+        <span>Overall Readiness</span>
+        <i class="fa-solid fa-chart-simple text-sky-400"></i>
+      </div>
+      <div class="flex items-baseline gap-1.5 mb-2">
+        <span class="text-2xl font-black text-white">{{ scores.overall_score }}%</span>
+        <span class="text-xs text-slate-400">Target Level</span>
+      </div>
+      <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+        <div class="bg-sky-400 h-1.5 rounded-full" :style="'width: {{ scores.overall_score|default:0 }}%'" data-progress="{{ scores.overall_score|default:0 }}"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Pillars Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+    <!-- Career Navigator -->
+    <a href="{% url 'career_assessment' %}" class="glass glass-hover rounded-2xl p-5 block text-decoration-none">
+      <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center text-base mb-3">
+        <i class="fa-solid fa-compass"></i>
+      </div>
+      <h3 class="text-sm font-bold text-slate-900 mb-1">Career Navigator</h3>
+      <p class="text-xs text-slate-500 mb-4 leading-relaxed">RIASEC Holland Code psychometric assessment matching 5+ global career paths.</p>
+      <div class="text-xs font-semibold text-sky-600 flex items-center gap-1">
+        Start Assessment <i class="fa-solid fa-arrow-right text-[10px]"></i>
+      </div>
+    </a>
+
+    <!-- University Explorer -->
+    <a href="{% url 'university_search' %}" class="glass glass-hover rounded-2xl p-5 block text-decoration-none">
+      <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-base mb-3">
+        <i class="fa-solid fa-building-columns"></i>
+      </div>
+      <h3 class="text-sm font-bold text-slate-900 mb-1">Universities</h3>
+      <p class="text-xs text-slate-500 mb-4 leading-relaxed">Search 100+ top curated institutions across US, UK, Canada, Germany &amp; compare.</p>
+      <div class="text-xs font-semibold text-indigo-600 flex items-center gap-1">
+        Explore Database <i class="fa-solid fa-arrow-right text-[10px]"></i>
+      </div>
+    </a>
+
+    <!-- Admission Predictor -->
+    <a href="{% url 'admission_predictor' %}" class="glass glass-hover rounded-2xl p-5 block text-decoration-none">
+      <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-base mb-3">
+        <i class="fa-solid fa-chart-line"></i>
+      </div>
+      <h3 class="text-sm font-bold text-slate-900 mb-1">Admission Predictor</h3>
+      <p class="text-xs text-slate-500 mb-4 leading-relaxed">ML scoring algorithm classifying programs into Safe, Target, and Reach tiers.</p>
+      <div class="text-xs font-semibold text-emerald-600 flex items-center gap-1">
+        Run Simulation <i class="fa-solid fa-arrow-right text-[10px]"></i>
+      </div>
+    </a>
+
+    <!-- ROI & Loan Marketplace -->
+    <a href="{% url 'roi_calculator' %}" class="glass glass-hover rounded-2xl p-5 block text-decoration-none">
+      <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center text-base mb-3">
+        <i class="fa-solid fa-sack-dollar"></i>
+      </div>
+      <h3 class="text-sm font-bold text-slate-900 mb-1">ROI &amp; Loan Marketplace</h3>
+      <p class="text-xs text-slate-500 mb-4 leading-relaxed">10-year break-even financial model and compare loan quotes from 6+ banks.</p>
+      <div class="text-xs font-semibold text-amber-600 flex items-center gap-1">
+        Model Finances <i class="fa-solid fa-arrow-right text-[10px]"></i>
+      </div>
     </a>
   </div>
 
-  <!-- Quick Stats -->
-  <div class="glass" style="border-radius: 20px; padding: 24px;" data-aos="fade-up" data-aos-delay="100">
-    <h3 style="font-weight: 600; color: #0F172A; margin: 0 0 16px; font-size: 14px;">Quick Stats</h3>
-    <div style="display: flex; flex-direction: column; gap: 0;">
-      <div
-        style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, .05);">
-        <span style="color: #475569; font-size: 13px;">&#127891; Target Degree</span>
-        <span style="color: #0F172A; font-size: 13px; font-weight: 500;">{{ profile.degree|default:"MS" }}</span>
+  <!-- Applications & AI Advisor Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Active Applications Tracker Preview -->
+    <div class="lg:col-span-2 glass rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Active Applications</h3>
+          <p class="text-xs text-slate-500">Track deadlines, SOP readiness, and decisions</p>
+        </div>
+        <a href="{% url 'application_tracker' %}" class="btn-secondary text-xs py-1.5 px-3">
+          Manage All <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+        </a>
       </div>
-      <div
-        style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, .05);">
-        <span style="color: #475569; font-size: 13px;">&#127760; Target Country</span>
-        <span style="color: #0F172A; font-size: 13px; font-weight: 500;">{{ profile.country_goal|default:"USA" }}</span>
-      </div>
-      <div
-        style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, .05);">
-        <span style="color: #475569; font-size: 13px;">&#128202; GPA / CGPA</span>
-        <span style="color: #0F172A; font-size: 13px; font-weight: 500;">{{ profile.gpa|default:"—" }}</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
-        <span style="color: #475569; font-size: 13px;">&#128176; Loan Status</span>
-        {% if loan_app.status == 'submitted' %}
-        <span class="badge badge-green">Submitted</span>
-        {% else %}
-        <span class="badge badge-blue">Not Applied</span>
-        {% endif %}
-      </div>
-    </div>
-  </div>
 
-  <!-- Level & Points -->
-  <div class="glass" style="border-radius: 20px; padding: 24px;" data-aos="fade-up" data-aos-delay="200">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-      <h3 style="font-weight: 600; color: #0F172A; margin: 0; font-size: 14px;">Your Level</h3>
-      <span class="badge badge-yellow">Level {{ profile.level|default:1 }}</span>
-    </div>
-    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
-      <div
-        style="width: 60px; height: 60px; border-radius: 16px; background: rgba(249, 115, 22, .1); border: 1px solid rgba(249, 115, 22, .25); display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
-        {% if profile.points|default:0 >= 100 %}&#127942;{% elif profile.points|default:0 >= 50 %}&#11088;{% else %}&#127807;{% endif %}
+      {% if applications %}
+      <div class="space-y-3">
+        {% for app in applications|slice:":4" %}
+        <div class="p-3.5 rounded-xl border border-slate-200 flex items-center justify-between hover:bg-slate-50 transition">
+          <div>
+            <div class="font-bold text-slate-900 text-sm">{{ app.university_name }}</div>
+            <div class="text-xs text-slate-500">{{ app.program_name }} &bull; Deadline: {{ app.deadline }}</div>
+          </div>
+          <span class="badge {% if app.status == 'admitted' %}badge-green{% elif app.status == 'submitted' %}badge-blue{% else %}badge-slate{% endif %} capitalize">
+            {{ app.status }}
+          </span>
+        </div>
+        {% endfor %}
       </div>
+      {% else %}
+      <div class="text-center py-8 text-slate-400">
+        <i class="fa-regular fa-folder-open text-2xl mb-2"></i>
+        <p class="text-xs text-slate-500">No active applications tracked yet.</p>
+        <a href="{% url 'application_tracker' %}" class="btn-primary text-xs py-2 px-3 mt-3">
+          Add Target University
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- AI Advisor Quick Prompt -->
+    <div class="glass rounded-2xl p-6 shadow-sm flex flex-col justify-between">
       <div>
-        <div style="font-size: 1.8rem; font-weight: 900; color: #0F172A;">{{ profile.points|default:0 }}<span
-            style="color: #475569; font-size: 1rem; font-weight: 400;"> pts</span></div>
-        <div style="font-size: 12px; color: #475569;">Earn more by completing tasks</div>
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-sm font-bold">
+            <i class="fa-solid fa-brain"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">StudyBridge AI Advisor</h3>
+        </div>
+        <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+          Ask any question about university requirements, GRE preparation, SOP critiques, or student visa guidelines.
+        </p>
+
+        <div class="space-y-2 mb-4 text-xs">
+          <a href="{% url 'chatbot' %}?q=Which+universities+fit+my+profile" class="block p-2.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition">
+            "Which universities fit my CGPA and budget?"
+          </a>
+          <a href="{% url 'chatbot' %}?q=How+to+finance+my+studies+with+Section+80E" class="block p-2.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition">
+            "How do education loan tax deductions work?"
+          </a>
+          <a href="{% url 'chatbot' %}?q=What+is+STEM+OPT+extension" class="block p-2.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition">
+            "Explain the 3-year US STEM OPT work permit."
+          </a>
+        </div>
       </div>
-    </div>
-    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-      <span class="badge badge-blue">&#129517; Navigator</span>
-      {% if profile.points|default:0 >= 50 %}<span class="badge badge-green">&#128203; Researcher</span>{% endif %}
-      {% if loan_app.status == 'submitted' %}<span class="badge badge-orange">&#128176; Financier</span>{% endif %}
+
+      <a href="{% url 'chatbot' %}" class="btn-brand w-full justify-center py-2.5 text-xs">
+        <i class="fa-regular fa-comment-dots"></i> Open Full AI Chatbot
+      </a>
     </div>
   </div>
+
 </div>
 
-<!-- Tools -->
-<h2 style="font-weight: 700; color: #0F172A; font-size: 1.1rem; margin: 0 0 16px;" data-aos="fade-up">AI Tools</h2>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
-  <a href="{% url 'career_navigator' %}" class="glass"
-    style="border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; text-decoration: none;"
-    data-aos="fade-up">
-    <div
-      style="width: 44px; height: 44px; border-radius: 12px; background: rgba(14, 165, 233, .08); border: 1px solid rgba(14, 165, 233, .18); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
-      &#129517;</div>
-    <div>
-      <div style="font-weight: 600; color: #0F172A; font-size: 13px;">Career Navigator</div>
-      <div style="font-size: 11px; color: #475569;">Find best universities</div>
-    </div>
-  </a>
-  <a href="{% url 'roi_calculator' %}" class="glass"
-    style="border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; text-decoration: none;"
-    data-aos="fade-up" data-aos-delay="50">
-    <div
-      style="width: 44px; height: 44px; border-radius: 12px; background: rgba(16, 185, 129, .08); border: 1px solid rgba(16, 185, 129, .18); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
-      &#128200;</div>
-    <div>
-      <div style="font-weight: 600; color: #0F172A; font-size: 13px;">ROI Calculator</div>
-      <div style="font-size: 11px; color: #475569;">Calculate returns</div>
-    </div>
-  </a>
-  <a href="{% url 'admission_predictor' %}" class="glass"
-    style="border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; text-decoration: none;"
-    data-aos="fade-up" data-aos-delay="100">
-    <div
-      style="width: 44px; height: 44px; border-radius: 12px; background: rgba(249, 115, 22, .08); border: 1px solid rgba(249, 115, 22, .18); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
-      &#127919;</div>
-    <div>
-      <div style="font-weight: 600; color: #0F172A; font-size: 13px;">Admission Predictor</div>
-      <div style="font-size: 11px; color: #475569;">Check admit chances</div>
-    </div>
-  </a>
-  <a href="{% url 'loan_estimator' %}" class="glass"
-    style="border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; text-decoration: none;"
-    data-aos="fade-up" data-aos-delay="150">
-    <div
-      style="width: 44px; height: 44px; border-radius: 12px; background: rgba(14, 165, 233, .08); border: 1px solid rgba(14, 165, 233, .18); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
-      &#127974;</div>
-    <div>
-      <div style="font-weight: 600; color: #0F172A; font-size: 13px;">Loan Estimator</div>
-      <div style="font-size: 11px; color: #475569;">Check eligibility</div>
-    </div>
-  </a>
-  <a href="{% url 'chatbot' %}" class="glass"
-    style="border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; text-decoration: none;"
-    data-aos="fade-up" data-aos-delay="200">
-    <div
-      style="width: 44px; height: 44px; border-radius: 12px; background: rgba(16, 185, 129, .08); border: 1px solid rgba(16, 185, 129, .18); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
-      &#128172;</div>
-    <div>
-      <div style="font-weight: 600; color: #0F172A; font-size: 13px;">AI Chatbot</div>
-      <div style="font-size: 11px; color: #475569;">Get instant answers</div>
-    </div>
-  </a>
-  <a href="{% url 'timeline' %}" class="glass"
-    style="border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; text-decoration: none;"
-    data-aos="fade-up" data-aos-delay="250">
-    <div
-      style="width: 44px; height: 44px; border-radius: 12px; background: rgba(249, 115, 22, .08); border: 1px solid rgba(249, 115, 22, .18); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
-      &#128197;</div>
-    <div>
-      <div style="font-weight: 600; color: #0F172A; font-size: 13px;">My Timeline</div>
-      <div style="font-size: 11px; color: #475569;">Track all deadlines</div>
-    </div>
-  </a>
-  <a href="{% url 'emi_calculator' %}" class="glass"
-    style="border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; text-decoration: none;"
-    data-aos="fade-up" data-aos-delay="300">
-    <div
-      style="width: 44px; height: 44px; border-radius: 12px; background: rgba(234, 179, 8, .08); border: 1px solid rgba(234, 179, 8, .18); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
-      &#128290;</div>
-    <div>
-      <div style="font-weight: 600; color: #0F172A; font-size: 13px;">EMI Calculator</div>
-      <div style="font-size: 11px; color: #475569;">Plan repayments</div>
-    </div>
-  </a>
-</div>
-</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-progress]').forEach(function(el) {
+      var val = el.getAttribute('data-progress');
+      if (val !== null && val !== '') {
+        el.style.width = val + '%';
+      }
+    });
+  });
+</script>
 {% endblock %}

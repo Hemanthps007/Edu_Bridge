@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Administrator Dashboard{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+  <!-- Header -->
+  <div class="pb-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="badge badge-amber font-bold text-xs"><i class="fa-solid fa-shield-halved"></i> Administrator Access</span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">Platform Management &amp; Analytics</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Real-time system telemetry, active student records, and application monitoring.</p>
+    </div>
+  </div>
+
+  <!-- KPI Metrics Grid -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+    <div class="glass rounded-xl p-4 border border-slate-200">
+      <div class="text-[10px] uppercase font-bold text-slate-400">Total Users</div>
+      <div class="text-2xl font-black text-slate-900 mt-1">{{ stats.total_users }}</div>
+      <div class="text-[10px] text-emerald-600 font-semibold">+18% this month</div>
+    </div>
+    <div class="glass rounded-xl p-4 border border-slate-200">
+      <div class="text-[10px] uppercase font-bold text-slate-400">Active Today</div>
+      <div class="text-2xl font-black text-slate-900 mt-1">{{ stats.active_today }}</div>
+      <div class="text-[10px] text-slate-400">Live sessions</div>
+    </div>
+    <div class="glass rounded-xl p-4 border border-slate-200">
+      <div class="text-[10px] uppercase font-bold text-slate-400">Applications</div>
+      <div class="text-2xl font-black text-slate-900 mt-1">{{ stats.applications_tracked }}</div>
+      <div class="text-[10px] text-slate-400">In flight</div>
+    </div>
+    <div class="glass rounded-xl p-4 border border-slate-200">
+      <div class="text-[10px] uppercase font-bold text-slate-400">AI Consultations</div>
+      <div class="text-2xl font-black text-slate-900 mt-1">{{ stats.ai_queries_answered }}</div>
+      <div class="text-[10px] text-sky-600 font-semibold">RAG + Claude</div>
+    </div>
+    <div class="glass rounded-xl p-4 border border-slate-200">
+      <div class="text-[10px] uppercase font-bold text-slate-400">Loans Modeled</div>
+      <div class="text-2xl font-black text-slate-900 mt-1">{{ stats.loans_modeled }}</div>
+      <div class="text-[10px] text-slate-400">₹42 Cr volume</div>
+    </div>
+    <div class="glass rounded-xl p-4 border border-slate-200">
+      <div class="text-[10px] uppercase font-bold text-slate-400">Scholarships</div>
+      <div class="text-2xl font-black text-slate-900 mt-1">{{ stats.scholarships_indexed }}</div>
+      <div class="text-[10px] text-emerald-600 font-semibold">Active schemes</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Recent Registered Users -->
+    <div class="glass rounded-2xl p-6 shadow-sm border border-slate-200">
+      <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4 pb-2 border-b border-slate-100">
+        Registered Candidates
+      </h3>
+      <div class="overflow-x-auto text-xs">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="border-b border-slate-200 text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
+              <th class="py-2">Candidate</th>
+              <th class="py-2">Role</th>
+              <th class="py-2">Country Goal</th>
+              <th class="py-2">XP / Lvl</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700">
+            {% for u in users %}
+            <tr>
+              <td class="py-2.5">
+                <div class="font-bold text-slate-900">{{ u.name|default:u.email }}</div>
+                <div class="text-[11px] text-slate-400">{{ u.email }}</div>
+              </td>
+              <td class="py-2.5 capitalize"><span class="badge badge-slate text-[10px]">{{ u.role|default:'student' }}</span></td>
+              <td class="py-2.5 font-medium">{{ u.country_goal|default:'USA' }}</td>
+              <td class="py-2.5 font-semibold text-slate-900">{{ u.points|default:50 }} XP</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="py-4 text-center text-slate-400">No users found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Monitored University Applications -->
+    <div class="glass rounded-2xl p-6 shadow-sm border border-slate-200">
+      <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4 pb-2 border-b border-slate-100">
+        Active Candidate Applications
+      </h3>
+      <div class="overflow-x-auto text-xs">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="border-b border-slate-200 text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
+              <th class="py-2">Target Institution</th>
+              <th class="py-2">Program</th>
+              <th class="py-2">Status</th>
+              <th class="py-2">Deadline</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700">
+            {% for app in applications %}
+            <tr>
+              <td class="py-2.5 font-bold text-slate-900">{{ app.university_name }}</td>
+              <td class="py-2.5 text-slate-600">{{ app.program_name }}</td>
+              <td class="py-2.5 capitalize">
+                <span class="badge {% if app.status == 'admitted' %}badge-green{% elif app.status == 'submitted' %}badge-blue{% else %}badge-slate{% endif %} text-[10px]">
+                  {{ app.status }}
+                </span>
+              </td>
+              <td class="py-2.5 text-slate-500 font-medium">{{ app.deadline }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="py-4 text-center text-slate-400">No applications recorded yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

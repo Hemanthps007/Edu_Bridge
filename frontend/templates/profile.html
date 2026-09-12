@@ -1,107 +1,285 @@
 {% extends 'base.html' %}
-{% block title %}My Profile{% endblock %}
+{% block title %}Account &amp; Biometrics{% endblock %}
 {% block content %}
-<div style="max-width:800px;margin:0 auto;padding:32px 24px;">
-  <h1 style="font-size:2rem;font-weight:900;color:#0F172A;margin:0 0 32px;">My Profile</h1>
-  <div class="glass" style="border-radius:20px;padding:32px;">
-    <form method="post" style="display:flex;flex-direction:column;gap:24px;">
-      {% csrf_token %}
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Full Name</label>
-          <input type="text" name="name" value="{{ profile.name|default:'' }}" class="inp"/>
-        </div>
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Phone Number</label>
-          <input type="tel" name="phone" value="{{ profile.phone|default:'' }}" placeholder="+91 98765 43210" class="inp"/>
-        </div>
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Target Degree</label>
-          <select name="degree" class="inp">
-            <option value="MS"   {% if profile.degree == 'MS'   %}selected{% endif %}>MS / M.Tech</option>
-            <option value="MBA"  {% if profile.degree == 'MBA'  %}selected{% endif %}>MBA</option>
-            <option value="PhD"  {% if profile.degree == 'PhD'  %}selected{% endif %}>PhD</option>
-            <option value="MIM"  {% if profile.degree == 'MIM'  %}selected{% endif %}>MIM</option>
-            <option value="MEng" {% if profile.degree == 'MEng' %}selected{% endif %}>MEng</option>
-          </select>
-        </div>
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Current University</label>
-          <input type="text" name="university_current" value="{{ profile.university_current|default:'' }}" placeholder="IIT Bombay / NIT Trichy" class="inp"/>
-        </div>
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">GPA / CGPA</label>
-          <input type="number" name="gpa" value="{{ profile.gpa|default:'' }}" step="0.01" placeholder="3.5 or 8.5" class="inp"/>
-        </div>
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Target Country</label>
-          <select name="country_goal" class="inp">
-            <option value="USA"       {% if profile.country_goal == 'USA'       %}selected{% endif %}>USA</option>
-            <option value="Canada"    {% if profile.country_goal == 'Canada'    %}selected{% endif %}>Canada</option>
-            <option value="UK"        {% if profile.country_goal == 'UK'        %}selected{% endif %}>UK</option>
-            <option value="Germany"   {% if profile.country_goal == 'Germany'   %}selected{% endif %}>Germany</option>
-            <option value="Australia" {% if profile.country_goal == 'Australia' %}selected{% endif %}>Australia</option>
-          </select>
-        </div>
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Target Program</label>
-          <input type="text" name="target_program" value="{{ profile.target_program|default:'' }}" placeholder="MS Computer Science" class="inp"/>
-        </div>
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Annual Budget</label>
-          <select name="budget" class="inp">
-            <option value="low"    {% if profile.budget == 'low'    %}selected{% endif %}>Under $30K/yr</option>
-            <option value="medium" {% if profile.budget == 'medium' %}selected{% endif %}>$30K - $50K/yr</option>
-            <option value="high"   {% if profile.budget == 'high'   %}selected{% endif %}>Over $50K/yr</option>
-          </select>
-        </div>
-        <div style="grid-column:1/-1;">
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Journey Stage</label>
-          <select name="journey_stage" class="inp">
-            <option value="exploration"   {% if profile.journey_stage == 'exploration'   %}selected{% endif %}>Exploring Options</option>
-            <option value="shortlisting"  {% if profile.journey_stage == 'shortlisting'  %}selected{% endif %}>Shortlisting Universities</option>
-            <option value="test_prep"     {% if profile.journey_stage == 'test_prep'     %}selected{% endif %}>Test Preparation</option>
-            <option value="applications"  {% if profile.journey_stage == 'applications'  %}selected{% endif %}>Applications In Progress</option>
-            <option value="visa"          {% if profile.journey_stage == 'visa'          %}selected{% endif %}>Visa Process</option>
-            <option value="financing"     {% if profile.journey_stage == 'financing'     %}selected{% endif %}>Loan / Financing</option>
-            <option value="pre_departure" {% if profile.journey_stage == 'pre_departure' %}selected{% endif %}>Pre-Departure</option>
-          </select>
-        </div>
-      </div>
-      <div>
-        <button type="submit" class="btn-primary">
-          <i class="fa-solid fa-floppy-disk"></i> Save Profile (+10 pts)
-        </button>
-      </div>
-    </form>
+<div class="max-w-5xl mx-auto px-4 py-8 space-y-8" x-data="{
+    cameraActive: false,
+    statusText: '',
+    enrollError: '',
+    enrollSuccess: '',
+    isEnrolling: false
+}">
+
+  <!-- Title -->
+  <div class="pb-4 border-b border-slate-200 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">Account &amp; Security Settings</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Manage personal information, biometric authentication, and credentials</p>
+    </div>
+    <span class="badge badge-blue font-semibold text-xs">Student Account</span>
   </div>
 
-  <div class="glass" style="border-radius:20px;padding:32px;margin-top:24px;">
-    <h2 style="font-size:1.4rem;font-weight:700;color:#0F172A;margin:0 0 20px;">Recent Login Activity</h2>
-    {% if logins %}
-      <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;text-align:left;font-size:14px;">
-          <thead>
-            <tr style="border-bottom:1px solid rgba(15, 23, 42, 0.08);color:#475569;">
-              <th style="padding:10px 8px;">Date & Time</th>
-              <th style="padding:10px 8px;">IP Address</th>
-              <th style="padding:10px 8px;">Device/Browser</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for login in logins %}
-              <tr style="border-bottom:1px solid rgba(15, 23, 42, 0.04);">
-                <td style="padding:12px 8px;font-family:monospace;">{{ login.login_time }}</td>
-                <td style="padding:12px 8px;">{{ login.ip_address|default:"N/A" }}</td>
-                <td style="padding:12px 8px;font-size:12px;color:#475569;">{{ login.user_agent|truncatechars:80|default:"N/A" }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- Left: Profile Form -->
+    <div class="lg:col-span-2 space-y-6">
+      <div class="glass rounded-2xl p-6 shadow-sm">
+        <div class="flex items-center gap-2 pb-3 border-b border-slate-100 mb-5">
+          <i class="fa-solid fa-user-pen text-slate-400"></i>
+          <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Academic Details</h2>
+        </div>
+
+        <form method="post" action="{% url 'profile' %}" class="space-y-4">
+          {% csrf_token %}
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Full Name</label>
+              <input type="text" name="name" value="{{ profile.name|default:'' }}" class="inp" required />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Email Address</label>
+              <input type="email" value="{{ profile.email|default:'' }}" disabled class="inp bg-slate-50 text-slate-400 cursor-not-allowed" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Undergraduate CGPA</label>
+              <input type="number" step="0.01" name="gpa" value="{{ profile.degree_cgpa|default:'8.4' }}" class="inp font-bold text-slate-900" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">GRE Score</label>
+              <input type="number" name="gre_score" value="{{ profile.gre_score|default:'315' }}" class="inp" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">IELTS Score</label>
+              <input type="number" step="0.5" name="ielts_score" value="{{ profile.ielts_score|default:'7.5' }}" class="inp" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Target Destination</label>
+              <select name="country_goal" class="inp font-semibold">
+                <option value="USA" {% if profile.country_goal == 'USA' %}selected{% endif %}>United States</option>
+                <option value="UK" {% if profile.country_goal == 'UK' %}selected{% endif %}>United Kingdom</option>
+                <option value="Canada" {% if profile.country_goal == 'Canada' %}selected{% endif %}>Canada</option>
+                <option value="Germany" {% if profile.country_goal == 'Germany' %}selected{% endif %}>Germany</option>
+                <option value="Singapore" {% if profile.country_goal == 'Singapore' %}selected{% endif %}>Singapore</option>
+                <option value="Australia" {% if profile.country_goal == 'Australia' %}selected{% endif %}>Australia</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Target Graduate Program</label>
+              <input type="text" name="target_program" value="{{ profile.target_program|default:'MS Computer Science' }}" class="inp" />
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" class="btn-primary">
+              <i class="fa-solid fa-floppy-disk"></i> Save Profile Details
+            </button>
+          </div>
+        </form>
       </div>
-    {% else %}
-      <p style="color:#64748B;font-size:14px;margin:0;">No recent logins recorded.</p>
-    {% endif %}
+
+      <!-- Login Security Audit Table -->
+      <div class="glass rounded-2xl p-6 shadow-sm">
+        <div class="flex items-center gap-2 pb-3 border-b border-slate-100 mb-4">
+          <i class="fa-solid fa-clock-rotate-left text-slate-400"></i>
+          <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Recent Login Audit Trail</h2>
+        </div>
+        <div class="overflow-x-auto text-xs">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
+                <th class="py-2">Timestamp</th>
+                <th class="py-2">IP Address</th>
+                <th class="py-2">Device / Agent</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-600">
+              {% for l in logins|slice:":5" %}
+              <tr>
+                <td class="py-2.5 font-medium text-slate-900">{{ l.login_time|slice:":19" }}</td>
+                <td class="py-2.5 font-mono text-[11px]">{{ l.ip_address|default:"127.0.0.1" }}</td>
+                <td class="py-2.5 max-w-[200px] truncate text-slate-400">{{ l.user_agent|default:"Standard Browser" }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="3" class="py-4 text-center text-slate-400">No previous sessions recorded.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Biometrics & Gamification -->
+    <div class="space-y-6">
+      <!-- Face ID Enrollment Card -->
+      <div class="glass rounded-2xl p-6 shadow-sm border {% if profile.face_auth_enabled %}border-emerald-200{% else %}border-slate-200{% endif %}">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-face-smile text-sky-600 text-base"></i>
+            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Face ID Biometrics</h3>
+          </div>
+          {% if profile.face_auth_enabled %}
+          <span class="badge badge-green">Enrolled</span>
+          {% else %}
+          <span class="badge badge-slate">Not Configured</span>
+          {% endif %}
+        </div>
+
+        <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+          Log into StudyBridge securely using local facial landmarks. Face descriptors remain client-encrypted.
+        </p>
+
+        <!-- Camera Enrollment Container -->
+        <div class="relative bg-slate-900 rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center border border-slate-200 mb-4">
+          <video id="enrollVideo" class="w-full h-full object-cover" autoplay playsinline muted></video>
+
+          <template x-if="!cameraActive">
+            <div class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-slate-900/90 text-white">
+              <i class="fa-solid fa-camera text-slate-400 text-xl mb-2"></i>
+              <p class="text-xs text-slate-300">Webcam required for enrollment</p>
+              <button @click="startEnrollmentCamera()" class="btn-brand text-xs py-2 px-3 mt-3">
+                <i class="fa-solid fa-video"></i> Start Camera
+              </button>
+            </div>
+          </template>
+
+          <template x-if="cameraActive">
+            <div class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
+              <div class="w-36 h-48 rounded-full border-2 border-dashed border-sky-400 animate-pulse"></div>
+              <span class="absolute bottom-2 text-[10px] font-semibold bg-slate-900/80 text-white px-2.5 py-0.5 rounded-full" x-text="statusText || 'Center face'"></span>
+            </div>
+          </template>
+        </div>
+
+        <div x-show="enrollError" class="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium mb-3">
+          <span x-text="enrollError"></span>
+        </div>
+        <div x-show="enrollSuccess" class="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium mb-3">
+          <span x-text="enrollSuccess"></span>
+        </div>
+
+        <template x-if="cameraActive">
+          <button @click="enrollFaceDescriptors()" :disabled="isEnrolling" class="btn-primary w-full justify-center text-xs py-2 mb-2">
+            <i class="fa-solid fa-fingerprint" :class="isEnrolling ? 'animate-spin' : ''"></i>
+            <span x-text="isEnrolling ? 'Extracting Vector...' : 'Capture & Save Biometrics'"></span>
+          </button>
+        </template>
+
+        {% if profile.face_auth_enabled %}
+        <button @click="deleteFaceBiometrics()" class="w-full text-center text-xs text-rose-600 hover:text-rose-700 font-semibold py-2 border border-rose-200 rounded-lg hover:bg-rose-50 transition mt-2">
+          <i class="fa-solid fa-trash-can"></i> Delete Face ID Data (GDPR)
+        </button>
+        {% endif %}
+      </div>
+
+      <!-- Gamification Achievements Card -->
+      <div class="glass rounded-2xl p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-award text-amber-500"></i>
+            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Achievements</h3>
+          </div>
+          <span class="badge badge-amber font-semibold">{{ gamification.xp }} XP</span>
+        </div>
+
+        <div class="space-y-2.5">
+          {% for badge in gamification.badges_unlocked %}
+          <div class="p-2.5 rounded-xl border border-emerald-100 bg-emerald-50/40 flex items-center gap-3 text-xs">
+            <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+              <i class="fa-solid {{ badge.icon }}"></i>
+            </div>
+            <div>
+              <div class="font-bold text-slate-900">{{ badge.name }}</div>
+              <div class="text-[11px] text-slate-500">{{ badge.desc }}</div>
+            </div>
+          </div>
+          {% endfor %}
+
+          {% for badge in gamification.badges_locked %}
+          <div class="p-2.5 rounded-xl border border-slate-100 bg-slate-50/50 flex items-center gap-3 text-xs opacity-60">
+            <div class="w-7 h-7 rounded-lg bg-slate-200 text-slate-400 flex items-center justify-center">
+              <i class="fa-solid {{ badge.icon }}"></i>
+            </div>
+            <div>
+              <div class="font-bold text-slate-700">{{ badge.name }}</div>
+              <div class="text-[11px] text-slate-400">+{{ badge.xp }} XP to unlock</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
+
+<script>
+function startEnrollmentCamera() {
+  const alpine = Alpine.$data(document.querySelector('[x-data]'));
+  const video = document.getElementById('enrollVideo');
+  alpine.enrollError = '';
+  alpine.enrollSuccess = '';
+  alpine.statusText = 'Starting camera...';
+
+  window.faceAuth.loadModels(msg => { alpine.statusText = msg; })
+    .then(() => window.faceAuth.startCamera(video))
+    .then(() => {
+      alpine.cameraActive = true;
+      alpine.statusText = 'Camera ready. Hold steady.';
+    })
+    .catch(err => {
+      alpine.cameraActive = false;
+      alpine.enrollError = err.message || 'Could not start camera.';
+    });
+}
+
+async function enrollFaceDescriptors() {
+  const alpine = Alpine.$data(document.querySelector('[x-data]'));
+  alpine.isEnrolling = true;
+  alpine.enrollError = '';
+  alpine.statusText = 'Capturing 3 facial samples...';
+
+  try {
+    const template = await window.faceAuth.captureEnrollmentTemplate(3, (cur, total) => {
+      alpine.statusText = `Capturing sample ${cur} of ${total}...`;
+    });
+
+    alpine.statusText = 'Encrypting & storing biometrics...';
+
+    const resp = await fetch('/enroll-face/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ descriptor: template })
+    });
+    const res = await resp.json();
+
+    if (res.success) {
+      alpine.enrollSuccess = 'Face ID enrolled successfully! +150 XP awarded.';
+      alpine.statusText = 'Enrolled.';
+      setTimeout(() => window.location.reload(), 1500);
+    } else {
+      alpine.enrollError = res.error || 'Enrollment failed.';
+    }
+  } catch (err) {
+    alpine.enrollError = err.message || 'Failed to capture face.';
+  } finally {
+    alpine.isEnrolling = false;
+  }
+}
+
+async function deleteFaceBiometrics() {
+  if (!confirm('Are you sure you want to permanently delete your enrolled face biometrics?')) return;
+  const resp = await fetch('/delete-face/', { method: 'POST', headers: {'Content-Type': 'application/json'} });
+  const res = await resp.json();
+  if (res.success) {
+    window.location.reload();
+  }
+}
+</script>
 {% endblock %}

@@ -64,6 +64,72 @@ SCHEMAS = {
             ('user_agent', 'TEXT'),
             ('json_data', 'TEXT')
         ]
+    },
+    'universities': {
+        'columns': [
+            ('id', 'TEXT PRIMARY KEY'),
+            ('name', 'TEXT'),
+            ('country', 'TEXT'),
+            ('json_data', 'TEXT')
+        ]
+    },
+    'applications': {
+        'columns': [
+            ('id', 'TEXT PRIMARY KEY'),
+            ('uid', 'TEXT'),
+            ('university_name', 'TEXT'),
+            ('status', 'TEXT'),
+            ('json_data', 'TEXT')
+        ]
+    },
+    'scholarships': {
+        'columns': [
+            ('id', 'TEXT PRIMARY KEY'),
+            ('name', 'TEXT'),
+            ('country', 'TEXT'),
+            ('json_data', 'TEXT')
+        ]
+    },
+    'loan_providers': {
+        'columns': [
+            ('id', 'TEXT PRIMARY KEY'),
+            ('bank_name', 'TEXT'),
+            ('json_data', 'TEXT')
+        ]
+    },
+    'mentors': {
+        'columns': [
+            ('id', 'TEXT PRIMARY KEY'),
+            ('name', 'TEXT'),
+            ('specialization', 'TEXT'),
+            ('json_data', 'TEXT')
+        ]
+    },
+    'mentor_bookings': {
+        'columns': [
+            ('id', 'TEXT PRIMARY KEY'),
+            ('uid', 'TEXT'),
+            ('mentor_id', 'TEXT'),
+            ('scheduled_at', 'TEXT'),
+            ('json_data', 'TEXT')
+        ]
+    },
+    'notifications': {
+        'columns': [
+            ('id', 'TEXT PRIMARY KEY'),
+            ('uid', 'TEXT'),
+            ('is_read', 'INTEGER'),
+            ('created_at', 'TEXT'),
+            ('json_data', 'TEXT')
+        ]
+    },
+    'face_credentials': {
+        'columns': [
+            ('id', 'TEXT PRIMARY KEY'),
+            ('uid', 'TEXT'),
+            ('created_at', 'TEXT'),
+            ('json_data', 'TEXT')
+        ]
     }
 }
 
@@ -255,15 +321,156 @@ def query_docs(collection, field, op, value, limit=30):
         return []
 
 
+def get_all_docs(collection, limit=100):
+    if _demo_mode:
+        try:
+            with get_db_conn() as conn:
+                cursor = conn.cursor()
+                cursor.execute(f"SELECT json_data FROM {collection} LIMIT ?", (limit,))
+                rows = cursor.fetchall()
+            return [json.loads(r[0]) for r in rows]
+        except Exception:
+            return []
+    try:
+        docs = _db.collection(collection).limit(limit).stream()
+        return [d.to_dict() for d in docs]
+    except Exception as e:
+        print(f"Firebase get_all_docs error: {e}")
+        return []
+
+
+def delete_doc(collection, doc_id):
+    if _demo_mode:
+        try:
+            with get_db_conn() as conn:
+                cursor = conn.cursor()
+                cursor.execute(f"DELETE FROM {collection} WHERE id = ?", (doc_id,))
+                conn.commit()
+            return True
+        except Exception as e:
+            print(f"SQLite delete_doc error: {e}")
+            return False
+    try:
+        _db.collection(collection).document(doc_id).delete()
+        return True
+    except Exception as e:
+        print(f"Firebase delete error: {e}")
+        return False
+
+
 # ── Domain helpers ────────────────────────────────────────────────────────────
 
-def get_user_profile(uid):       return get_doc('users', uid)
+DEFAULT_USER_PROFILE = {
+    'gre_score': 315,
+    'degree_cgpa': 8.4,
+    'gpa': 8.4,
+    'ielts_score': 7.5,
+    'work_exp': 1,
+    'research_papers': 0,
+    'internships': 2,
+    'projects': 2,
+    'target_program': 'MS Computer Science',
+    'country_goal': 'USA',
+    'degree': 'Bachelors',
+    'budget_usd': 50000,
+    'streak': 1,
+    'points': 0,
+    'level': 1,
+    'badges': [],
+    'face_auth_enabled': False,
+    'journey_stage': 'discovery',
+}
+
+def get_user_profile(uid):
+    doc = get_doc('users', uid)
+    if not doc:
+        return None
+    for k, v in DEFAULT_USER_PROFILE.items():
+        if k not in doc or doc[k] is None:
+            doc[k] = v
+    return doc
+
 def save_user_profile(uid, d):   return set_doc('users', uid, d)
 def get_assessment(uid):         return get_doc('assessments', uid)
 def save_assessment(uid, d):     return set_doc('assessments', uid, d)
 def get_loan_application(uid):   return get_doc('loan_applications', uid)
 def save_loan_application(uid, d): return set_doc('loan_applications', uid, d)
 
+# Face Recognition Credentials
+def save_face_credential(uid, descriptors_json):
+    return set_doc('face_credentials', uid, {
+        'uid': uid,
+        'descriptors': descriptors_json,
+        'updated_at': datetime.now().isoformat()
+    })
+
+def get_face_credential(uid):
+    return get_doc('face_credentials', uid)
+
+def delete_face_credential(uid):
+    return delete_doc('face_credentials', uid)
+
+# Applications
+def get_user_applications(uid):
+    apps = query_docs('applications', 'uid', '==', uid, limit=50)
+    apps.sort(key=lambda x: x.get('updated_at', ''), reverse=True)
+    return apps
+
+def save_application(uid, app_data):
+    app_id = app_data.get('id') or str(uuid.uuid4())
+    app_data['id'] = app_id
+    app_data['uid'] = uid
+    app_data['updated_at'] = datetime.now().isoformat()
+    set_doc('applications', app_id, app_data)
+    return app_id
+
+def delete_application(app_id):
+    return delete_doc('applications', app_id)
+
+# Notifications
+def get_notifications(uid, limit=20):
+    notifs = query_docs('notifications', 'uid', '==', uid, limit=limit)
+    notifs.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    return notifs
+
+def add_notification(uid, title, message, category='info', link=''):
+    nid = str(uuid.uuid4())
+    data = {
+        'id': nid,
+        'uid': uid,
+        'title': title,
+        'message': message,
+        'category': category,
+        'link': link,
+        'is_read': 0,
+        'created_at': datetime.now().isoformat()
+    }
+    set_doc('notifications', nid, data)
+    return nid
+
+def mark_notification_read(nid):
+    doc = get_doc('notifications', nid)
+    if doc:
+        doc['is_read'] = 1
+        set_doc('notifications', nid, doc)
+        return True
+    return False
+
+# Mentors & Bookings
+def get_all_mentors():
+    return get_all_docs('mentors', limit=50)
+
+def book_mentor_session(uid, mentor_id, booking_data):
+    bid = str(uuid.uuid4())
+    booking_data['id'] = bid
+    booking_data['uid'] = uid
+    booking_data['mentor_id'] = mentor_id
+    booking_data['created_at'] = datetime.now().isoformat()
+    set_doc('mentor_bookings', bid, booking_data)
+    return bid
+
+def get_user_mentor_bookings(uid):
+    return query_docs('mentor_bookings', 'uid', '==', uid, limit=20)
 
 def add_chat_message(uid, role, content):
     return add_doc('chat_history', {'uid': uid, 'role': role, 'content': content})
@@ -284,3 +491,4 @@ def log_user_login(uid, email, ip_address, user_agent):
         'user_agent': user_agent,
     }
     return add_doc('user_logins', login_data)
+

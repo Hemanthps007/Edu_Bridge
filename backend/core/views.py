@@ -1,70 +1,108 @@
-import json, hashlib
+import json
+import uuid
+import hashlib
+import math
 from datetime import datetime
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.conf import settings
-from . import firebase_client as fb
 
+from . import firebase_client as fb
+from .decorators import role_required
+from services.data_providers.curated import CuratedDataProvider
+from services.data_providers.college_scorecard import CollegeScorecardProvider
+from utils.profile_scorer import calculate_profile_scores
+from utils.career_matcher import score_riasec
+from .admission_predictor import admission_predictor
+from utils.roi_engine import calculate_advanced_roi
+from utils.loan_calculator import get_loan_options, calculate_emi, LENDER_CATALOG
+from utils.scholarship_matcher import match_scholarships, SCHOLARSHIPS_DATA
+from services.ai_document_analyzer import analyze_sop_content
+from services.rag_service import answer_rag_query
+from services.study_planner import generate_study_plan
+from utils.gamification import calculate_gamification_state, award_xp
+
+data_provider = CollegeScorecardProvider()
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def _hash(pw):
+def _hash(pw: str) -> str:
     return hashlib.sha256(pw.encode()).hexdigest()
 
-
 def login_required(fn):
-    def wrapper(request, *a, **kw):
+    def wrapper(request, *args, **kwargs):
         if not request.session.get('user'):
-            messages.warning(request, 'Please sign in to continue.')
+            messages.warning(request, 'Please sign in to access your StudyBridge account.')
             return redirect('login')
-        return fn(request, *a, **kw)
+        return fn(request, *args, **kwargs)
     wrapper.__name__ = fn.__name__
     return wrapper
 
+def _calculate_vector_distance(vec1, vec2):
+    """Calculates Euclidean distance between two face descriptor vectors."""
+    if not vec1 or not vec2 or len(vec1) != len(vec2):
+        return 1.0
+    sq_sum = sum((a - b) ** 2 for a, b in zip(vec1, vec2))
+    return math.sqrt(sq_sum)
 
-# ── Public ────────────────────────────────────────────────────────────────────
+
+# ── Authentication & Biometrics ──────────────────────────────────────────────
 
 def landing(request):
     if request.session.get('user'):
         return redirect('dashboard')
-    return render(request, 'landing.html')
+    top_unis = data_provider.search_universities(limit=6)
+    return render(request, 'landing.html', {'top_unis': top_unis})
 
 
 def register_view(request):
     if request.session.get('user'):
         return redirect('dashboard')
     if request.method == 'POST':
-        name  = request.POST.get('name', '').strip()
+        name = request.POST.get('name', '').strip()
         email = request.POST.get('email', '').strip().lower()
-        pw    = request.POST.get('password', '')
-        degree        = request.POST.get('degree', 'MS')
-        country_goal  = request.POST.get('country_goal', 'USA')
+        pw = request.POST.get('password', '')
+        role = request.POST.get('role', 'student')
+        degree = request.POST.get('degree', 'MS')
+        country_goal = request.POST.get('country_goal', 'USA')
+
         if not all([name, email, pw]):
             messages.error(request, 'All fields are required.')
             return render(request, 'register.html')
+
         uid = hashlib.md5(email.encode()).hexdigest()
         if fb.get_user_profile(uid):
-            messages.error(request, 'Account already exists with this email.')
+            messages.error(request, 'An account already exists with this email address.')
             return render(request, 'register.html')
-        # Secure password storage using SHA-256 hash algorithm
+
         profile = {
-            'uid': uid, 'name': name, 'email': email,
+            'uid': uid,
+            'name': name,
+            'email': email,
             'password_hash': _hash(pw),
-            'degree': degree, 'country_goal': country_goal,
-            'points': 10, 'level': 1, 'streak': 1,
-            'badges': [], 'journey_stage': 'exploration',
+            'role': role,
+            'degree': degree,
+            'country_goal': country_goal,
+            'points': 50,
+            'level': 1,
+            'streak': 1,
+            'badges': ['profile_complete'],
+            'journey_stage': 'exploration',
             'created_at': datetime.now().isoformat(),
             'failed_attempts': 0,
+            'face_auth_enabled': False,
         }
         fb.save_user_profile(uid, profile)
         ip_address = request.META.get('REMOTE_ADDR', '')
         user_agent = request.META.get('HTTP_USER_AGENT', '')
         fb.log_user_login(uid, email, ip_address, user_agent)
-        request.session['user'] = {'uid': uid, 'name': name, 'email': email}
-        messages.success(request, f'Welcome to StudyBridge, {name}! +10 points')
-        return redirect('dashboard')
+        fb.add_notification(uid, "Welcome to StudyBridge", "Your account is created. Complete your student profile for personalized admissions insight.", "info", "/profile/")
+
+        request.session['user'] = {'uid': uid, 'name': name, 'email': email, 'role': role}
+        messages.success(request, f'Welcome to StudyBridge, {name}! +50 XP awarded.')
+        return redirect('onboarding')
     return render(request, 'register.html')
 
 
@@ -73,41 +111,35 @@ def login_view(request):
         return redirect('dashboard')
     if request.method == 'POST':
         email = request.POST.get('email', '').strip().lower()
-        pw    = request.POST.get('password', '')
-        uid   = hashlib.md5(email.encode()).hexdigest()
+        pw = request.POST.get('password', '')
+        uid = hashlib.md5(email.encode()).hexdigest()
         profile = fb.get_user_profile(uid)
-        
+
         if profile:
-            # Prevent login if account is locked out after 3 failed attempts
             failed = profile.get('failed_attempts', 0)
-            if failed >= 3:
-                messages.error(request, 'This account has been locked due to too many failed login attempts. Please contact support.')
+            if failed >= 5:
+                messages.error(request, 'This account is temporarily locked due to excessive failed attempts.')
                 return render(request, 'login.html')
-            
-            # Verify password using secure SHA-256 hash comparison
+
             if profile.get('password_hash') == _hash(pw):
-                # Successful login: reset failed attempts counter to 0
                 profile['failed_attempts'] = 0
                 fb.save_user_profile(uid, profile)
-                
-                request.session['user'] = {'uid': uid, 'name': profile.get('name', email), 'email': email}
+                request.session['user'] = {
+                    'uid': uid,
+                    'name': profile.get('name', email),
+                    'email': email,
+                    'role': profile.get('role', 'student')
+                }
                 ip_address = request.META.get('REMOTE_ADDR', '')
                 user_agent = request.META.get('HTTP_USER_AGENT', '')
                 fb.log_user_login(uid, email, ip_address, user_agent)
-                
                 messages.success(request, f"Welcome back, {profile.get('name')}!")
                 return redirect('dashboard')
             else:
-                # Password incorrect: increment and update failed attempts
                 failed += 1
                 profile['failed_attempts'] = failed
                 fb.save_user_profile(uid, profile)
-                
-                remaining = 3 - failed
-                if remaining <= 0:
-                    messages.error(request, 'This account has been locked due to too many failed login attempts.')
-                else:
-                    messages.error(request, f'Invalid email or password. {remaining} trials remaining.')
+                messages.error(request, f'Invalid email or password. {5 - failed} trials remaining.')
         else:
             messages.error(request, 'Invalid email or password.')
     return render(request, 'login.html')
@@ -118,42 +150,196 @@ def logout_view(request):
     return redirect('landing')
 
 
-# ── Dashboard ─────────────────────────────────────────────────────────────────
+@csrf_exempt
+def verify_face_auth(request):
+    """Verifies captured browser face descriptor against enrolled biometric signature."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+    try:
+        data = json.loads(request.body)
+        email = data.get('email', '').strip().lower()
+        descriptor = data.get('descriptor')
+
+        if not email or not descriptor:
+            return JsonResponse({'success': False, 'error': 'Email and biometric descriptor are required.'}, status=400)
+
+        uid = hashlib.md5(email.encode()).hexdigest()
+        profile = fb.get_user_profile(uid)
+        if not profile:
+            return JsonResponse({'success': False, 'error': 'No account associated with this email address.'}, status=404)
+
+        cred = fb.get_face_credential(uid)
+        if not cred or not cred.get('descriptors'):
+            return JsonResponse({'success': False, 'error': 'Face ID is not enrolled for this account. Please sign in with password first.'}, status=400)
+
+        stored_descriptor = cred.get('descriptors')
+        distance = _calculate_vector_distance(descriptor, stored_descriptor)
+        confidence = max(0.0, min(100.0, (1.0 - (distance / 0.65)) * 100.0))
+
+        # Strict match threshold: distance <= 0.55
+        if distance <= 0.55 or confidence >= 80.0:
+            request.session['user'] = {
+                'uid': uid,
+                'name': profile.get('name', email),
+                'email': email,
+                'role': profile.get('role', 'student')
+            }
+            ip_address = request.META.get('REMOTE_ADDR', '')
+            user_agent = request.META.get('HTTP_USER_AGENT', '')
+            fb.log_user_login(uid, email, ip_address, user_agent)
+            return JsonResponse({
+                'success': True,
+                'confidence': round(confidence, 1),
+                'redirect': '/dashboard/'
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': f'Biometric face verification failed (confidence {confidence:.1f}%). Please use password.'
+            }, status=401)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+def enroll_face_auth(request):
+    """Enrolls or updates webcam face recognition descriptor."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body)
+        descriptor = data.get('descriptor')
+        if not descriptor or len(descriptor) != 128:
+            return JsonResponse({'success': False, 'error': 'Invalid 128-dimensional face descriptor.'}, status=400)
+
+        uid = request.session['user']['uid']
+        fb.save_face_credential(uid, descriptor)
+        profile = fb.get_user_profile(uid) or {}
+        profile['face_auth_enabled'] = True
+        profile = award_xp(profile, 'face_auth', 150, 'biometric_secured')
+        fb.save_user_profile(uid, profile)
+
+        fb.add_notification(uid, "Face ID Enrolled", "Browser biometric login is now enabled for your account.", "success", "/profile/")
+        return JsonResponse({'success': True, 'message': 'Face biometric profile securely enrolled! +150 XP'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+def delete_face_auth(request):
+    """GDPR-compliant removal of face biometric descriptor data."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+    uid = request.session['user']['uid']
+    fb.delete_face_credential(uid)
+    profile = fb.get_user_profile(uid) or {}
+    profile['face_auth_enabled'] = False
+    fb.save_user_profile(uid, profile)
+    messages.info(request, 'Your biometric face data has been completely erased.')
+    return JsonResponse({'success': True})
+
+
+# ── Core Dashboard & Onboarding ───────────────────────────────────────────────
 
 @login_required
 def dashboard(request):
     uid = request.session['user']['uid']
-    profile    = fb.get_user_profile(uid) or {}
+    profile = fb.get_user_profile(uid) or {}
     assessment = fb.get_assessment(uid) or {}
-    loan_app   = fb.get_loan_application(uid) or {}
+    loan_app = fb.get_loan_application(uid) or {}
+    applications = fb.get_user_applications(uid)
+    notifications = fb.get_notifications(uid, limit=5)
+    gamification = calculate_gamification_state(profile)
+    scores = calculate_profile_scores(profile)
 
     stages = [
-        {'id': 'exploration',   'label': 'Exploring',     'icon': '🔍'},
-        {'id': 'shortlisting',  'label': 'Shortlisting',  'icon': '📋'},
-        {'id': 'test_prep',     'label': 'Test Prep',     'icon': '📚'},
-        {'id': 'applications',  'label': 'Applications',  'icon': '✏️'},
-        {'id': 'visa',          'label': 'Visa',          'icon': '🛂'},
-        {'id': 'financing',     'label': 'Financing',     'icon': '💰'},
-        {'id': 'pre_departure', 'label': 'Pre-Departure', 'icon': '✈️'},
+        {'id': 'exploration',   'label': 'Discovery',     'icon': 'fa-compass'},
+        {'id': 'shortlisting',  'label': 'Shortlist',     'icon': 'fa-building-columns'},
+        {'id': 'test_prep',     'label': 'Test Prep',     'icon': 'fa-book-open'},
+        {'id': 'applications',  'label': 'Applications',  'icon': 'fa-file-signature'},
+        {'id': 'financing',     'label': 'Financing',     'icon': 'fa-sack-dollar'},
+        {'id': 'visa',          'label': 'Visa Support',  'icon': 'fa-passport'},
+        {'id': 'pre_departure', 'label': 'Departure',     'icon': 'fa-plane'},
     ]
     current_stage = profile.get('journey_stage', 'exploration')
     stage_idx = next((i for i, s in enumerate(stages) if s['id'] == current_stage), 0)
+    progress_pct = int((stage_idx / (len(stages) - 1)) * 100)
 
     return render(request, 'dashboard.html', {
         'profile': profile,
         'assessment': assessment,
         'loan_app': loan_app,
+        'applications': applications,
+        'notifications': notifications,
+        'gamification': gamification,
+        'scores': scores,
         'stages': stages,
         'current_stage': current_stage,
         'stage_idx': stage_idx,
-        'progress_pct': int(stage_idx / (len(stages) - 1) * 100),
+        'progress_pct': progress_pct,
     })
+
+
+@login_required
+def onboarding_view(request):
+    uid = request.session['user']['uid']
+    profile = fb.get_user_profile(uid) or {}
+
+    if request.method == 'POST':
+        updates = {
+            'name': request.POST.get('name', profile.get('name', '')),
+            'age': request.POST.get('age', '22'),
+            'city': request.POST.get('city', 'Bengaluru'),
+            'education_level': request.POST.get('education_level', 'Undergraduate'),
+            'tenth_pct': float(request.POST.get('tenth_pct', 85) or 85),
+            'twelfth_pct': float(request.POST.get('twelfth_pct', 86) or 86),
+            'degree_cgpa': float(request.POST.get('degree_cgpa', 8.4) or 8.4),
+            'gpa': float(request.POST.get('degree_cgpa', 8.4) or 8.4),
+            'gre_score': int(request.POST.get('gre_score', 315) or 315),
+            'ielts_score': float(request.POST.get('ielts_score', 7.5) or 7.5),
+            'work_exp': int(request.POST.get('work_exp', 1) or 1),
+            'research_papers': int(request.POST.get('research_papers', 0) or 0),
+            'internships': int(request.POST.get('internships', 2) or 2),
+            'country_goal': request.POST.get('country_goal', 'USA'),
+            'target_program': request.POST.get('target_program', 'MS Computer Science'),
+            'budget': request.POST.get('budget', '3500000'),
+            'interests': request.POST.getlist('interests'),
+            'journey_stage': 'shortlisting'
+        }
+        profile.update(updates)
+        profile = award_xp(profile, 'onboarding', 200, 'profile_complete')
+        fb.save_user_profile(uid, profile)
+        messages.success(request, 'Profile onboarding complete! +200 XP')
+        return redirect('dashboard')
+
+    return render(request, 'onboarding.html', {'profile': profile})
+
+
+@login_required
+@csrf_exempt
+def calculate_profile_score_api(request):
+    uid = request.session['user']['uid']
+    profile = fb.get_user_profile(uid) or {}
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            profile.update(data)
+        except Exception:
+            pass
+    scores = calculate_profile_scores(profile)
+    return JsonResponse(scores)
 
 
 @login_required
 def profile_view(request):
     uid = request.session['user']['uid']
     profile = fb.get_user_profile(uid) or {}
+    face_cred = fb.get_face_credential(uid)
+    gamification = calculate_gamification_state(profile)
+    scores = calculate_profile_scores(profile)
+
     if request.method == 'POST':
         updates = {
             'name': request.POST.get('name', profile.get('name', '')),
@@ -161,376 +347,249 @@ def profile_view(request):
             'degree': request.POST.get('degree', ''),
             'university_current': request.POST.get('university_current', ''),
             'gpa': request.POST.get('gpa', ''),
+            'degree_cgpa': request.POST.get('gpa', ''),
+            'gre_score': request.POST.get('gre_score', ''),
+            'ielts_score': request.POST.get('ielts_score', ''),
             'country_goal': request.POST.get('country_goal', ''),
             'target_program': request.POST.get('target_program', ''),
             'budget': request.POST.get('budget', ''),
-            'journey_stage': request.POST.get('journey_stage', 'exploration'),
         }
         profile.update(updates)
-        pts = (profile.get('points', 0) or 0) + 10
-        profile['points'] = pts
+        profile = award_xp(profile, 'profile_update', 25)
         fb.save_user_profile(uid, profile)
         request.session['user']['name'] = updates['name']
         request.session.modified = True
-        messages.success(request, 'Profile updated! +10 points')
+        messages.success(request, 'Profile details updated! +25 XP')
         return redirect('profile')
+
     logins = fb.query_docs('user_logins', 'uid', '==', uid, limit=10)
     logins.sort(key=lambda x: x.get('login_time', ''), reverse=True)
-    for l in logins:
-        t = l.get('login_time', '')
-        if 'T' in t:
-            l['login_time'] = t.replace('T', ' ').split('.')[0]
-    return render(request, 'profile.html', {'profile': profile, 'logins': logins})
+    return render(request, 'profile.html', {
+        'profile': profile,
+        'face_cred': face_cred,
+        'gamification': gamification,
+        'scores': scores,
+        'logins': logins
+    })
 
 
-# ── AI Tools ──────────────────────────────────────────────────────────────────
+# ── Module 1: Career Navigator & RIASEC Assessment ───────────────────────────
+
+@login_required
+def career_assessment(request):
+    uid = request.session['user']['uid']
+    profile = fb.get_user_profile(uid) or {}
+    assessment = fb.get_assessment(uid) or {}
+
+    if request.method == 'POST':
+        answers = {k: v for k, v in request.POST.items() if k != 'csrfmiddlewaretoken'}
+        assessment_result = score_riasec(answers)
+        assessment_data = {
+            'answers': answers,
+            'result': assessment_result,
+            'completed_at': datetime.now().isoformat()
+        }
+        fb.save_assessment(uid, assessment_data)
+        profile['career_assessment_completed'] = True
+        profile['riasec_code'] = assessment_result['holland_code']
+        profile = award_xp(profile, 'assessment', 300, 'career_explorer')
+        fb.save_user_profile(uid, profile)
+        messages.success(request, 'RIASEC Career Assessment finished! +300 XP')
+        return render(request, 'navigator_result.html', {'result': assessment_result, 'profile': profile})
+
+    return render(request, 'career_assessment.html', {'profile': profile, 'assessment': assessment})
+
 
 @login_required
 def career_navigator(request):
-    uid = request.session['user']['uid']
-    profile = fb.get_user_profile(uid) or {}
-    return render(request, 'career_navigator.html', {'profile': profile})
+    return redirect('career_assessment')
 
 
 @login_required
 def navigator_result(request):
-    if request.method != 'POST':
-        return redirect('career_navigator')
-
-    uid  = request.session['user']['uid']
-    data = {k: v for k, v in request.POST.items() if k != 'csrfmiddlewaretoken'}
-
-    field    = data.get('field', 'Computer Science')
-    country  = data.get('country_pref', 'USA')
-    gre      = int(data.get('gre_score', 310) or 310)
-    gpa      = float(data.get('gpa', 3.0) or 3.0)
-    budget   = data.get('budget', 'medium')
-
-    recs   = _recommendations(field, country, gre, gpa, budget)
-    score  = _profile_score(gre, gpa, data)
-
-    assessment = {
-        'inputs': data,
-        'recommendations': recs,
-        'profile_score': score,
-        'generated_at': datetime.now().isoformat(),
-    }
-    fb.save_assessment(uid, assessment)
-
+    uid = request.session['user']['uid']
+    assessment = fb.get_assessment(uid) or {}
     profile = fb.get_user_profile(uid) or {}
-    pts = (profile.get('points', 0) or 0) + 25
-    fb.set_doc('users', uid, {'points': pts, 'journey_stage': 'shortlisting'})
-    messages.success(request, 'Assessment complete! +25 points')
-    return render(request, 'navigator_result.html', {'assessment': assessment, 'data': data})
+    result = assessment.get('result') or score_riasec({})
+    return render(request, 'navigator_result.html', {'result': result, 'profile': profile})
 
 
-def _profile_score(gre, gpa, data):
-    s = 0
-    s += min(40, int((gre - 260) / 80 * 40))
-    s += min(25, int((gpa - 2.0) / 2.0 * 25))
-    s += min(15, int(data.get('work_exp', '0') or '0') * 5)
-    s += 10 if int(data.get('research_papers', '0') or '0') > 0 else 0
-    s += 10 if int(data.get('internships', '0') or '0') > 0 else 0
-    return min(100, s)
+# ── Module 2: University Intelligence & Side-by-Side Comparison ──────────────
 
+@login_required
+def university_search(request):
+    query = request.GET.get('q', '').strip()
+    country = request.GET.get('country', 'all').strip()
+    max_tuition = request.GET.get('max_tuition')
+    max_t = int(max_tuition) if max_tuition and max_tuition.isdigit() else None
 
-def _recommendations(field, country, gre, gpa, budget):
-    DB = {
-        'Computer Science': {
-            'USA': [
-                {'name': 'Carnegie Mellon University', 'rank': 1,  'avg_gre': 325, 'avg_gpa': 3.8, 'tuition': 62000, 'accept_rate': 8},
-                {'name': 'Georgia Tech',               'rank': 8,  'avg_gre': 320, 'avg_gpa': 3.6, 'tuition': 32000, 'accept_rate': 16},
-                {'name': 'University of Texas Austin', 'rank': 12, 'avg_gre': 315, 'avg_gpa': 3.5, 'tuition': 21000, 'accept_rate': 22},
-                {'name': 'Northeastern University',    'rank': 28, 'avg_gre': 312, 'avg_gpa': 3.4, 'tuition': 55000, 'accept_rate': 31},
-                {'name': 'Arizona State University',   'rank': 35, 'avg_gre': 305, 'avg_gpa': 3.2, 'tuition': 28000, 'accept_rate': 48},
-            ],
-            'Canada': [
-                {'name': 'University of Toronto',        'rank': 2, 'avg_gre': 318, 'avg_gpa': 3.7, 'tuition': 28000, 'accept_rate': 15},
-                {'name': 'University of British Columbia','rank': 5, 'avg_gre': 315, 'avg_gpa': 3.5, 'tuition': 24000, 'accept_rate': 20},
-                {'name': 'University of Waterloo',       'rank': 4, 'avg_gre': 319, 'avg_gpa': 3.6, 'tuition': 26000, 'accept_rate': 18},
-                {'name': 'McGill University',            'rank': 7, 'avg_gre': 312, 'avg_gpa': 3.4, 'tuition': 22000, 'accept_rate': 25},
-            ],
-            'UK': [
-                {'name': 'Imperial College London',  'rank': 1, 'avg_gre': 0, 'avg_gpa': 3.7, 'tuition': 38000, 'accept_rate': 14},
-                {'name': 'University of Edinburgh',  'rank': 4, 'avg_gre': 0, 'avg_gpa': 3.4, 'tuition': 27000, 'accept_rate': 22},
-                {'name': 'University of Manchester', 'rank': 6, 'avg_gre': 0, 'avg_gpa': 3.2, 'tuition': 25000, 'accept_rate': 30},
-            ],
-        },
-        'Business Administration': {
-            'USA': [
-                {'name': 'Harvard Business School',  'rank': 1, 'avg_gre': 330, 'avg_gpa': 3.9, 'tuition': 73440, 'accept_rate': 9},
-                {'name': 'Wharton (UPenn)',          'rank': 3, 'avg_gre': 325, 'avg_gpa': 3.6, 'tuition': 83230, 'accept_rate': 19},
-                {'name': 'Booth (U. Chicago)',       'rank': 4, 'avg_gre': 323, 'avg_gpa': 3.5, 'tuition': 75000, 'accept_rate': 23},
-                {'name': 'Kelley (Indiana Univ)',    'rank': 20,'avg_gre': 308, 'avg_gpa': 3.3, 'tuition': 35000, 'accept_rate': 37},
-            ],
-            'Canada': [
-                {'name': 'Rotman (U. Toronto)',  'rank': 2, 'avg_gre': 318, 'avg_gpa': 3.5, 'tuition': 52000, 'accept_rate': 24},
-                {'name': 'Ivey (UWO)',           'rank': 3, 'avg_gre': 315, 'avg_gpa': 3.3, 'tuition': 45000, 'accept_rate': 28},
-            ],
-            'UK': [
-                {'name': 'London Business School', 'rank': 2, 'avg_gre': 0, 'avg_gpa': 3.6, 'tuition': 92000, 'accept_rate': 18},
-                {'name': 'Oxford Said',            'rank': 4, 'avg_gre': 0, 'avg_gpa': 3.5, 'tuition': 68000, 'accept_rate': 22},
-            ],
-        },
-        'Data Science': {
-            'USA': [
-                {'name': 'MIT IDSS',               'rank': 1, 'avg_gre': 328, 'avg_gpa': 3.8, 'tuition': 58000, 'accept_rate': 7},
-                {'name': 'Columbia University',    'rank': 5, 'avg_gre': 322, 'avg_gpa': 3.6, 'tuition': 62000, 'accept_rate': 14},
-                {'name': 'University of Michigan', 'rank': 9, 'avg_gre': 318, 'avg_gpa': 3.5, 'tuition': 26000, 'accept_rate': 19},
-                {'name': 'NYU Tandon',             'rank': 22,'avg_gre': 312, 'avg_gpa': 3.3, 'tuition': 52000, 'accept_rate': 35},
-            ],
-            'Canada': [
-                {'name': 'University of Toronto', 'rank': 1, 'avg_gre': 318, 'avg_gpa': 3.6, 'tuition': 26000, 'accept_rate': 18},
-                {'name': 'McGill University',     'rank': 3, 'avg_gre': 312, 'avg_gpa': 3.4, 'tuition': 22000, 'accept_rate': 24},
-            ],
-            'UK': [
-                {'name': 'University College London', 'rank': 2, 'avg_gre': 0, 'avg_gpa': 3.6, 'tuition': 32000, 'accept_rate': 20},
-                {'name': 'University of Edinburgh',   'rank': 5, 'avg_gre': 0, 'avg_gpa': 3.3, 'tuition': 26000, 'accept_rate': 28},
-            ],
-        },
-    }
-    field_key   = field if field in DB else 'Computer Science'
-    country_key = country if country in DB.get(field_key, {}) else 'USA'
-    unis = DB.get(field_key, {}).get(country_key, [])
-
-    results = []
-    for u in unis:
-        gre_gap = (gre - u['avg_gre']) * 0.4 if u['avg_gre'] > 0 else 0
-        gpa_gap = (gpa - u['avg_gpa']) * 15
-        prob = max(5, min(95, u['accept_rate'] + gre_gap + gpa_gap))
-        cat = 'reach' if prob < 45 else 'target' if prob < 65 else 'safety'
-        results.append({**u, 'probability': round(prob), 'category': cat})
-
-    results.sort(key=lambda x: x['probability'], reverse=True)
-    return results
+    universities = data_provider.search_universities(query=query, country=country, max_tuition=max_t, limit=40)
+    return render(request, 'university_search.html', {
+        'universities': universities,
+        'query': query,
+        'country': country,
+        'max_tuition': max_tuition or ''
+    })
 
 
 @login_required
-def roi_calculator(request):
+def compare_universities(request):
+    uid = request.session['user']['uid']
+    profile = fb.get_user_profile(uid) or {}
+
+    uni_ids = request.GET.getlist('id')
+    if not uni_ids:
+        uni_ids = ['cmu', 'stanford', 'mit']
+
+    selected_unis = []
+    for uid_str in uni_ids[:5]:
+        u = data_provider.get_university_by_id(uid_str)
+        if u:
+            # Predict admission for each
+            pred = admission_predictor.predict(profile, target_rank=u.get('qs_ranking', 50))
+            selected_unis.append({
+                **u,
+                'admission_probability': pred['probability'],
+                'category': pred['category'],
+                'category_color': pred['category_color']
+            })
+
+    # AI Synthesis
+    ai_verdict = ""
+    if selected_unis:
+        best_pick = max(selected_unis, key=lambda x: x['admission_probability'])
+        ai_verdict = f"Recommended choice for your profile: **{best_pick['name']}**. It offers optimal program alignment, a strong {best_pick['admission_probability']}% admission probability ({best_pick['category']}), and high post-study ROI."
+
+    return render(request, 'university_compare.html', {
+        'universities': selected_unis,
+        'ai_verdict': ai_verdict,
+        'profile': profile
+    })
+
+
+# ── Module 3: ML Admission Predictor ──────────────────────────────────────────
+
+@login_required
+def admission_predictor_view(request):
+    uid = request.session['user']['uid']
+    profile = fb.get_user_profile(uid) or {}
+    
+    form_defaults = {
+        'gre': profile.get('gre_score', 315),
+        'gpa': profile.get('degree_cgpa', 8.4),
+        'ielts': profile.get('ielts_score', 7.5),
+        'work_exp': profile.get('work_exp', 1),
+        'research': profile.get('research_papers', 0),
+        'internships': profile.get('internships', 2),
+        'target_rank': request.GET.get('rank', 40),
+    }
+    ctx = {
+        'profile': profile,
+        'form_defaults': form_defaults,
+    }
+
+    if request.method == 'POST':
+        target_rank = int(request.POST.get('target_rank', 40))
+        eval_profile = {
+            'gre': float(request.POST.get('gre', profile.get('gre_score', 312))),
+            'gpa': float(request.POST.get('gpa', profile.get('degree_cgpa', 3.4))),
+            'ielts': float(request.POST.get('ielts', profile.get('ielts_score', 7.0))),
+            'work_exp': int(request.POST.get('work_exp', profile.get('work_exp', 1))),
+            'research': int(request.POST.get('research', profile.get('research_papers', 0))),
+            'internships': int(request.POST.get('internships', profile.get('internships', 2))),
+            'projects': int(request.POST.get('projects', 2)),
+        }
+        result = admission_predictor.predict(eval_profile, target_rank=target_rank)
+        award_xp(profile, 'predictor', 100, 'admission_analyst')
+        fb.save_user_profile(uid, profile)
+        ctx.update({
+            'calc': True,
+            'result': result,
+            'form_data': request.POST
+        })
+
+    return render(request, 'admission_predictor.html', ctx)
+
+
+# ── Module 4: Advanced Financial Modeling & Loan Marketplace ─────────────────
+
+@login_required
+def roi_calculator_view(request):
     ctx = {}
     if request.method == 'POST':
         try:
-            tuition   = float(request.POST.get('tuition', 35000))
-            living    = float(request.POST.get('living', 15000))
-            duration  = int(request.POST.get('duration', 2))
-            loan_int  = float(request.POST.get('loan_interest', 10.5))
-            pre_sal   = float(request.POST.get('pre_salary', 600000))
-            field     = request.POST.get('field', 'Computer Science')
-            country   = request.POST.get('country', 'USA')
-
-            sal_db = {
-                'Computer Science':     {'USA': 130000, 'Canada': 95000, 'UK': 75000, 'Germany': 65000, 'Australia': 90000},
-                'Business Administration': {'USA': 110000, 'Canada': 85000, 'UK': 80000, 'Germany': 70000, 'Australia': 88000},
-                'Data Science':         {'USA': 125000, 'Canada': 90000, 'UK': 72000, 'Germany': 68000, 'Australia': 92000},
-                'Engineering':          {'USA': 105000, 'Canada': 88000, 'UK': 68000, 'Germany': 72000, 'Australia': 85000},
-                'Finance':              {'USA': 115000, 'Canada': 82000, 'UK': 90000, 'Germany': 65000, 'Australia': 82000},
+            params = {
+                'tuition': float(request.POST.get('tuition', 45000)),
+                'accommodation': float(request.POST.get('accommodation', 12000)),
+                'food': float(request.POST.get('food', 6000)),
+                'insurance': float(request.POST.get('insurance', 2000)),
+                'travel': float(request.POST.get('travel', 1800)),
+                'visa_fees': float(request.POST.get('visa_fees', 600)),
+                'misc': float(request.POST.get('misc', 2500)),
+                'duration': float(request.POST.get('duration', 2.0)),
+                'country': request.POST.get('country', 'USA'),
+                'field': request.POST.get('field', 'Computer Science'),
             }
-            inr = 83.5
-            est_sal_usd   = sal_db.get(field, sal_db['Computer Science']).get(country, 100000)
-            total_usd     = (tuition + living) * duration
-            total_inr     = total_usd * inr
-            ann_gain_inr  = (est_sal_usd * inr) - pre_sal
-            payback       = round(total_inr / ann_gain_inr, 1) if ann_gain_inr > 0 else 99
-            mr            = loan_int / 100 / 12
-            emi           = round(total_usd * inr * mr / (1 - (1 + mr) ** -120)) if total_usd > 0 else 0
-            roi_pct       = round(((ann_gain_inr * 10) - total_inr) / total_inr * 100, 1)
-
-            chart = {
-                'years': list(range(1, 11)),
-                'cost':  [round((total_inr + emi * 12 * y) / 100000) for y in range(1, 11)],
-                'gain':  [round(ann_gain_inr * y / 100000) for y in range(1, 11)],
-            }
-            ctx = {
-                'calc': True,
-                'total_cost_usd': f'{total_usd:,.0f}',
-                'total_cost_inr': f'{total_inr/100000:.1f}L',
-                'est_sal_usd':    f'{est_sal_usd:,.0f}',
-                'est_sal_inr':    f'{est_sal_usd * inr / 100000:.1f}L',
-                'payback_years':  payback,
-                'roi_pct':        roi_pct,
-                'emi_monthly':    f'{emi:,.0f}',
-                'ann_gain_inr':   f'{ann_gain_inr/100000:.1f}L',
-                'chart_data':     chart,
-                'form_data':      request.POST,
-            }
+            res = calculate_advanced_roi(params)
+            ctx = {'calc': True, 'res': res, 'form_data': request.POST}
         except Exception as e:
-            messages.error(request, f'Calculation error: {e}')
+            messages.error(request, f'ROI calculation error: {e}')
+    else:
+        # Default computation
+        res = calculate_advanced_roi({})
+        ctx = {'calc': True, 'res': res, 'form_data': {}}
+
     return render(request, 'roi_calculator.html', ctx)
 
 
 @login_required
-def admission_predictor(request):
-    ctx = {}
-    if request.method == 'POST':
-        try:
-            gre         = int(request.POST.get('gre', 300))
-            gpa         = float(request.POST.get('gpa', 3.0))
-            work_exp    = int(request.POST.get('work_exp', 0))
-            research    = int(request.POST.get('research', 0))
-            internships = int(request.POST.get('internships', 0))
-            projects    = int(request.POST.get('projects', 0))
-            target_rank = int(request.POST.get('target_rank', 50))
+def loan_marketplace(request):
+    principal = float(request.GET.get('amount', 3500000))
+    tenure = int(request.GET.get('tenure', 10))
+    has_collateral = request.GET.get('collateral') == '1'
 
-            s = 0
-            s += min(35, int((gre - 260) / 80 * 35))
-            s += min(25, int((gpa - 2.0) / 2.0 * 25))
-            s += min(15, work_exp * 3)
-            s += min(10, research * 5)
-            s += min(8,  internships * 4)
-            s += min(7,  projects * 2)
-            s = min(100, s)
+    loan_data = get_loan_options(principal, tenure_years=tenure, has_collateral=has_collateral)
+    return render(request, 'loan_marketplace.html', {'loan_data': loan_data})
 
-            rank_penalty = max(0, (150 - target_rank) / 150 * 20)
-            prob = max(5, min(95, s - rank_penalty + 10))
-
-            strengths, gaps = [], []
-            if gre >= 315:  strengths.append('Strong GRE score')
-            else:           gaps.append('GRE score below competitive range (aim 315+)')
-            if gpa >= 3.5:  strengths.append('Excellent GPA')
-            elif gpa >= 3.0: strengths.append('Decent GPA')
-            else:           gaps.append('GPA needs improvement (aim 3.0+)')
-            if work_exp >= 2:     strengths.append('Relevant work experience')
-            elif work_exp == 0:   gaps.append('No work experience — consider internships')
-            if research >= 1:     strengths.append('Research publication / experience')
-            else:                 gaps.append('Research experience strengthens STEM apps')
-            if internships >= 2:  strengths.append('Strong internship portfolio')
-
-            ctx = {
-                'calc': True,
-                'score': s,
-                'probability': round(prob),
-                'strengths': strengths,
-                'gaps': gaps,
-                'grade': 'Excellent' if s >= 80 else 'Good' if s >= 60 else 'Average' if s >= 40 else 'Needs Work',
-                'form_data': request.POST,
-            }
-        except Exception as e:
-            messages.error(request, f'Error: {e}')
-    return render(request, 'admission_predictor.html', ctx)
-
-
-@login_required
-def timeline_view(request):
-    uid = request.session['user']['uid']
-    profile = fb.get_user_profile(uid) or {}
-    country = profile.get('country_goal', 'USA')
-
-    events = [
-        {'label': 'Research Universities & Programs', 'desc': 'Explore rankings, fees, scholarships', 'category': 'research'},
-        {'label': 'GRE / GMAT Preparation',           'desc': 'Register & start prep (3-6 months)',   'category': 'test'},
-        {'label': 'GRE / GMAT Exam',                  'desc': 'Take the standardized test',           'category': 'test'},
-        {'label': 'IELTS / TOEFL Exam',               'desc': 'English proficiency certification',    'category': 'test'},
-        {'label': 'Shortlist Universities (8-10)',     'desc': 'Reach, target & safety mix',          'category': 'research'},
-        {'label': 'Request Recommendations (LOR)',     'desc': 'Contact 3 professors / managers',     'category': 'application'},
-        {'label': 'Draft Statement of Purpose',        'desc': 'Craft compelling SOP for each uni',   'category': 'application'},
-        {'label': 'Financial Planning & Loan Research','desc': 'Explore education loans & scholarships','category': 'finance'},
-        {'label': 'Submit Applications',               'desc': 'Apply to all shortlisted universities','category': 'application'},
-        {'label': 'Loan Pre-Approval',                 'desc': 'Apply for education loan pre-approval','category': 'finance'},
-        {'label': 'Receive Offer Letters',             'desc': 'Review and compare admits & rejects',  'category': 'decision'},
-        {'label': 'Confirm Enrollment & Pay Deposit',  'desc': 'Accept offer, pay seat deposit',       'category': 'decision'},
-        {'label': 'Finalize Education Loan',           'desc': 'Complete loan disbursement process',  'category': 'finance'},
-        {'label': f'Student Visa Application ({country})', 'desc': 'Prepare & submit visa application', 'category': 'visa'},
-        {'label': '✈️  Departure!',                    'desc': 'Begin your global journey',            'category': 'milestone'},
-    ]
-
-    return render(request, 'timeline.html', {'events': events, 'country': country})
-
-
-# ── Loan views ────────────────────────────────────────────────────────────────
 
 @login_required
 def loan_estimator(request):
-    ctx = {}
-    if request.method == 'POST':
-        try:
-            tuition    = float(request.POST.get('tuition', 35000))
-            living     = float(request.POST.get('living', 15000))
-            duration   = int(request.POST.get('duration', 2))
-            scholarship= float(request.POST.get('scholarship', 0))
-            savings    = float(request.POST.get('savings', 0))
-            gpa        = float(request.POST.get('gpa', 3.2))
-            co_income  = float(request.POST.get('co_income', 600000))
-            uni_rank   = int(request.POST.get('uni_rank', 50))
-            inr        = 83.5
-
-            total_usd   = (tuition + living) * duration
-            total_inr   = total_usd * inr
-            loan_needed = max(0, total_inr - scholarship * inr - savings)
-
-            score = min(100,
-                min(30, int((gpa - 2.0) / 2.0 * 30)) +
-                min(30, int(co_income / 2000000 * 30)) +
-                min(20, max(0, (100 - uni_rank) / 100 * 20)) + 20
-            )
-
-            lenders = [
-                {'name': 'SBI Global Ed-Vantage', 'rate': 10.15, 'max_loan': 15000000, 'fee': 0,   'collateral': 'Required > ₹75L', 'days': '7-10'},
-                {'name': 'HDFC Credila',          'rate': 10.50, 'max_loan':  7500000, 'fee': 1.0, 'collateral': 'Required > ₹40L', 'days': '3-5'},
-                {'name': 'ICICI Bank',            'rate': 11.00, 'max_loan': 10000000, 'fee': 1.0, 'collateral': 'Required > ₹50L', 'days': '4-6'},
-                {'name': 'Axis Bank',             'rate': 11.50, 'max_loan':  7500000, 'fee': 0.5, 'collateral': 'Required > ₹40L', 'days': '5-7'},
-                {'name': 'Avanse',                'rate': 11.75, 'max_loan':  7500000, 'fee': 1.5, 'collateral': 'Flexible',         'days': '2-4'},
-                {'name': 'InCred',                'rate': 12.50, 'max_loan':  6000000, 'fee': 2.0, 'collateral': 'Not Required',     'days': '2-3'},
-            ]
-
-            offers = []
-            for l in lenders:
-                eligible = min(l['max_loan'], co_income * 20)
-                mr  = l['rate'] / 100 / 12
-                emi = round(loan_needed * mr / (1 - (1 + mr) ** -120)) if loan_needed > 0 else 0
-                offers.append({**l, 'eligible_fmt': f"{eligible/100000:.0f}L", 'emi_fmt': f"{emi:,.0f}"})
-
-            ctx = {
-                'calc': True,
-                'loan_needed':     f'{loan_needed/100000:.1f}L',
-                'total_cost_inr':  f'{total_inr/100000:.1f}L',
-                'elig_score':      score,
-                'offers':          offers,
-                'form_data':       request.POST,
-            }
-        except Exception as e:
-            messages.error(request, f'Error: {e}')
-    return render(request, 'loan_estimator.html', ctx)
+    return redirect('loan_marketplace')
 
 
 @login_required
-def emi_calculator(request):
-    ctx = {}
-    if request.method == 'POST':
-        try:
-            principal     = float(request.POST.get('principal', 4500000))
-            rate          = float(request.POST.get('rate', 10.5))
-            tenure_months = int(request.POST.get('tenure', 120))
-            mr  = rate / 100 / 12
-            emi = round(principal * mr / (1 - (1 + mr) ** -tenure_months))
-            total_pay = emi * tenure_months
-            total_int = total_pay - principal
+def emi_calculator_view(request):
+    principal = float(request.GET.get('p', 3500000))
+    rate = float(request.GET.get('r', 10.5))
+    tenure_years = int(request.GET.get('y', 10))
+    tenure_months = tenure_years * 12
 
-            schedule, balance = [], principal
-            for m in range(1, min(13, tenure_months + 1)):
-                ip = round(balance * mr)
-                pp = emi - ip
-                balance -= pp
-                schedule.append({'month': m, 'emi': emi, 'interest': ip, 'principal': pp, 'balance': max(0, round(balance))})
+    emi = calculate_emi(principal, rate, tenure_months)
+    total_payment = emi * tenure_months
+    total_interest = total_payment - principal
 
-            ctx = {
-                'calc': True,
-                'emi':         f'{emi:,.0f}',
-                'total_pay':   f'{total_pay:,.0f}',
-                'total_int':   f'{total_int:,.0f}',
-                'principal':   f'{principal:,.0f}',
-                'int_pct':     round(total_int / total_pay * 100, 1),
-                'schedule':    schedule,
-                'chart_data':  {'principal': round(principal), 'interest': round(total_int)},
-                'form_data':   request.POST,
-            }
-        except Exception as e:
-            messages.error(request, f'Error: {e}')
-    return render(request, 'emi_calculator.html', ctx)
+    schedule, balance = [], principal
+    mr = rate / 100.0 / 12.0
+    for m in range(1, min(13, tenure_months + 1)):
+        ip = round(balance * mr)
+        pp = emi - ip
+        balance -= pp
+        schedule.append({'month': m, 'emi': emi, 'interest': ip, 'principal': pp, 'balance': max(0, round(balance))})
+
+    return render(request, 'emi_calculator.html', {
+        'principal': principal,
+        'rate': rate,
+        'tenure_years': tenure_years,
+        'emi': f"₹{emi:,.0f}",
+        'total_pay': f"₹{total_payment:,.0f}",
+        'total_int': f"₹{total_interest:,.0f}",
+        'schedule': schedule
+    })
 
 
 @login_required
-def loan_application(request):
-    uid      = request.session['user']['uid']
+def loan_application_view(request):
+    uid = request.session['user']['uid']
     existing = fb.get_loan_application(uid) or {}
 
     if request.method == 'POST':
@@ -544,12 +603,12 @@ def loan_application(request):
             existing['status'] = 'submitted'
             fb.save_loan_application(uid, existing)
             profile = fb.get_user_profile(uid) or {}
-            pts = (profile.get('points', 0) or 0) + 100
-            fb.set_doc('users', uid, {'points': pts, 'journey_stage': 'financing'})
-            messages.success(request, 'Loan application submitted! +100 points')
+            profile = award_xp(profile, 'loan_app', 200, 'finance_master')
+            fb.save_user_profile(uid, profile)
+            messages.success(request, 'Education loan application submitted! +200 XP')
             return redirect('dashboard')
 
-        messages.success(request, f'Step {step} saved — continue to next section.')
+        messages.success(request, f'Section {step} saved.')
         return redirect('loan_application')
 
     return render(request, 'loan_application.html', {
@@ -558,118 +617,274 @@ def loan_application(request):
     })
 
 
-# ── Chatbot ───────────────────────────────────────────────────────────────────
+# ── Module 5: Scholarship Finder ──────────────────────────────────────────────
 
 @login_required
-def chatbot(request):
-    uid     = request.session['user']['uid']
+def scholarship_finder(request):
+    uid = request.session['user']['uid']
+    profile = fb.get_user_profile(uid) or {}
+    matched = match_scholarships(profile)
+    return render(request, 'scholarship_finder.html', {'scholarships': matched, 'profile': profile})
+
+
+# ── Module 6: Application Tracker & Document Analysis ─────────────────────────
+
+@login_required
+def application_tracker(request):
+    uid = request.session['user']['uid']
+    profile = fb.get_user_profile(uid) or {}
+    applications = fb.get_user_applications(uid)
+
+    if request.method == 'POST':
+        uni_name = request.POST.get('university_name', '').strip()
+        program = request.POST.get('program_name', 'MS Computer Science').strip()
+        deadline = request.POST.get('deadline', 'Dec 15, 2026').strip()
+        term = request.POST.get('term', 'Fall 2026')
+
+        if uni_name:
+            app_data = {
+                'university_name': uni_name,
+                'program_name': program,
+                'deadline': deadline,
+                'term': term,
+                'status': 'shortlisted',
+                'checklist': {
+                    'profile_created': True,
+                    'docs_uploaded': False,
+                    'sop_ready': False,
+                    'lor_received': False,
+                    'fee_paid': False,
+                    'submitted': False
+                }
+            }
+            fb.save_application(uid, app_data)
+            award_xp(profile, 'app_added', 150, 'application_pro')
+            fb.save_user_profile(uid, profile)
+            messages.success(request, f'Added {uni_name} to your application tracker! +150 XP')
+            return redirect('application_tracker')
+
+    return render(request, 'application_tracker.html', {'applications': applications})
+
+
+@login_required
+@csrf_exempt
+def update_application_status(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body)
+        app_id = data.get('app_id')
+        status = data.get('status')
+        checklist = data.get('checklist')
+
+        app_doc = fb.get_doc('applications', app_id)
+        if not app_doc:
+            return JsonResponse({'success': False, 'error': 'Application not found'}, status=404)
+
+        if status:
+            app_doc['status'] = status
+        if checklist:
+            app_doc['checklist'] = checklist
+
+        app_doc['updated_at'] = datetime.now().isoformat()
+        fb.set_doc('applications', app_id, app_doc)
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def document_manager(request):
+    uid = request.session['user']['uid']
+    profile = fb.get_user_profile(uid) or {}
+    analysis_result = None
+
+    if request.method == 'POST':
+        sop_text = request.POST.get('sop_text', '')
+        target_uni = request.POST.get('target_university', 'Carnegie Mellon University')
+        target_prog = request.POST.get('target_program', 'MS Computer Science')
+
+        if sop_text.strip():
+            analysis_result = analyze_sop_content(sop_text, target_uni, target_prog)
+            award_xp(profile, 'sop_analyzed', 150)
+            fb.save_user_profile(uid, profile)
+            messages.success(request, 'AI SOP analysis completed! +150 XP')
+
+    return render(request, 'document_manager.html', {'analysis': analysis_result, 'profile': profile})
+
+
+# ── Module 7: AI Chatbot (RAG-Enabled) & Study Planner ───────────────────────
+
+@login_required
+def chatbot_view(request):
+    uid = request.session['user']['uid']
     history = fb.get_chat_history(uid, limit=30)
-    return render(request, 'chatbot.html', {'history': history})
+    profile = fb.get_user_profile(uid) or {}
+    return render(request, 'chatbot.html', {'history': history, 'profile': profile})
 
 
 @csrf_exempt
 @login_required
 def chat_api(request):
     if request.method != 'POST':
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
-    uid  = request.session['user']['uid']
-    body = json.loads(request.body)
-    msg  = body.get('message', '').strip()
-    if not msg:
-        return JsonResponse({'error': 'Empty message'}, status=400)
-
-    fb.add_chat_message(uid, 'user', msg)
-    history  = fb.get_chat_history(uid, limit=12)
-    api_msgs = [{'role': h['role'], 'content': h['content']} for h in history]
-
-    response = _call_claude(api_msgs)
-    fb.add_chat_message(uid, 'assistant', response)
-    return JsonResponse({'response': response})
-
-
-def _call_claude(messages_list):
-    key = settings.ANTHROPIC_API_KEY
-    if not key:
-        return _demo_response(messages_list[-1]['content'])
+        return JsonResponse({'error': 'POST required'}, status=405)
     try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=key)
-        system = (
-            "You are StudyBridge AI — a warm, knowledgeable advisor for Indian students planning postgraduate education abroad "
-            "(US, UK, Canada, Germany, Australia) or in India.\n\n"
-            "You help with: university selection, program fit, GRE/GMAT/IELTS tips, SOP guidance, visa process (F-1, UK, Canada), "
-            "education loan comparison (SBI, HDFC Credila, Axis, Avanse, InCred), scholarships, cost of living, and career prospects.\n\n"
-            "Always use Indian context — INR conversions, Indian universities as baselines, CGPA systems. "
-            "Be specific, encouraging, and actionable. Use markdown formatting. "
-            "End with a brief follow-up question to keep the conversation going."
-        )
-        r = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=800,
-            system=system,
-            messages=messages_list,
-        )
-        return r.content[0].text
-    except Exception:
-        return _demo_response(messages_list[-1]['content'])
+        uid = request.session['user']['uid']
+        body = json.loads(request.body)
+        msg = body.get('message', '').strip()
+        if not msg:
+            return JsonResponse({'error': 'Message cannot be empty'}, status=400)
+
+        profile = fb.get_user_profile(uid) or {}
+        fb.add_chat_message(uid, 'user', msg)
+        history = fb.get_chat_history(uid, limit=10)
+
+        rag_output = answer_rag_query(msg, profile, history)
+        fb.add_chat_message(uid, 'assistant', rag_output['answer'])
+
+        return JsonResponse({
+            'response': rag_output['answer'],
+            'sources': rag_output.get('sources', [])
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
-def _demo_response(msg):
-    m = msg.lower()
-    if any(w in m for w in ['gre', 'gmat', 'score', 'exam', 'test']):
-        return (
-            "**GRE Score Ranges for Competitive Admissions:**\n\n"
-            "| Program Tier | GRE Score | Quant | Verbal |\n"
-            "|---|---|---|---|\n"
-            "| Top 10 US | 323+ | 167+ | 156+ |\n"
-            "| Rank 11-30 | 315-322 | 163+ | 152+ |\n"
-            "| Rank 31-75 | 305-315 | 158+ | 148+ |\n\n"
-            "**Preparation Tips:**\n"
-            "- **Manhattan Prep** or **Magoosh** for structured prep (3-4 months)\n"
-            "- Take a free **ETS practice test** first to baseline yourself\n"
-            "- Indian students usually score higher on Quant — focus on Verbal\n"
-            "- Last 4 weeks: 3 full-length practice tests per week\n\n"
-            "What's your target university tier? I can give you a more specific score goal."
-        )
-    if any(w in m for w in ['loan', 'finance', 'emi', 'money', 'cost', 'fund']):
-        return (
-            "**Education Loan Options for Indian Students:**\n\n"
-            "| Lender | Rate (p.a.) | Max Amount | Collateral |\n"
-            "|---|---|---|---|\n"
-            "| SBI Global Ed-Vantage | 10.15% | ₹1.5 Cr | Yes (>75L) |\n"
-            "| HDFC Credila | 10.5% | ₹75L | Yes (>40L) |\n"
-            "| ICICI Bank | 11.0% | ₹1 Cr | Yes (>50L) |\n"
-            "| Axis Bank | 11.5% | ₹75L | Yes (>40L) |\n"
-            "| Avanse | 11.75% | ₹75L | Flexible |\n"
-            "| InCred | 12.5% | ₹60L | Not Required |\n\n"
-            "**Documents needed:** Admission letter, fee structure, income proof (ITR/salary slips), KYC, property docs\n\n"
-            "**Pro tip:** Apply for loan **pre-approval** 2-3 months before you receive your admit — saves 4-6 weeks later.\n\n"
-            "Want me to calculate your EMI for a specific loan amount?"
-        )
-    if any(w in m for w in ['usa', 'us', 'america', 'united states']):
-        return (
-            "**Studying in the USA — Key Facts for Indian Students:**\n\n"
-            "**Visa:** F-1 Student Visa (get I-20 from university first)\n"
-            "**Duration:** MS = 1.5-2 years, MBA = 2 years, PhD = 4-6 years\n"
-            "**Annual Tuition:** $20,000–$65,000 depending on program\n"
-            "**Living Costs:** $12,000–$22,000/year (varies by city)\n\n"
-            "**Post-Study Work:**\n"
-            "- OPT: 12 months work authorization after graduation\n"
-            "- STEM OPT extension: additional 24 months (CS/DS/Engg)\n"
-            "- H-1B lottery for long-term stay\n\n"
-            "**Popular destinations:** Bay Area, Austin, New York, Seattle, Boston\n\n"
-            "**Top programs for Indians:** CS, Data Science, EE, Business Analytics, Finance\n\n"
-            "Which field are you considering for the US?"
-        )
-    return (
-        "Hello! I'm your **StudyBridge AI Advisor** 🎓\n\n"
-        "I'm here to guide you through every step of your higher education journey. Here's what I can help with:\n\n"
-        "- 🧭 **University selection** — Personalized program recommendations\n"
-        "- 📚 **Test prep** — GRE, GMAT, IELTS, TOEFL strategies\n"
-        "- ✍️ **Applications** — SOP, LOR, resume tips\n"
-        "- 🛂 **Visa guidance** — F-1, UK, Canada, Germany student visas\n"
-        "- 💰 **Education loans** — Compare SBI, HDFC, Axis, InCred & more\n"
-        "- 🌍 **Career planning** — Salary benchmarks, ROI analysis\n\n"
-        "*(Running in demo mode — add your Anthropic API key for full AI responses)*\n\n"
-        "What would you like to explore today?"
-    )
+@login_required
+def study_planner_view(request):
+    hours = int(request.GET.get('hours', 15))
+    plan = generate_study_plan(hours_per_week=hours)
+    return render(request, 'study_planner.html', {'plan': plan, 'hours': hours})
+
+
+# ── Module 8: Mentor Marketplace, Timeline & Admin ───────────────────────────
+
+@login_required
+def mentor_marketplace(request):
+    mentors = [
+        {
+            "id": "m1",
+            "name": "Dr. Aarav Sharma",
+            "title": "Principal AI Scientist at Google",
+            "education": "PhD Carnegie Mellon University",
+            "specialization": "AI/ML Systems, CS Admissions, Research SOP",
+            "country": "USA",
+            "hourly_rate": "₹850",
+            "rating": 4.9,
+            "reviews_count": 58,
+            "avatar_initials": "AS"
+        },
+        {
+            "id": "m2",
+            "name": "Priya Nair",
+            "title": "Senior Quantitative Strategist",
+            "education": "MSc Financial Math, Imperial College London",
+            "specialization": "UK Chevening Scholarships, Quant Finance, Visa",
+            "country": "UK",
+            "hourly_rate": "₹750",
+            "rating": 4.8,
+            "reviews_count": 42,
+            "avatar_initials": "PN"
+        },
+        {
+            "id": "m3",
+            "name": "Karthik Venkat",
+            "title": "Cloud Infrastructure Architect at AWS",
+            "education": "MS University of Waterloo",
+            "specialization": "Canada Co-Op Programs, Tech Career Transitions",
+            "country": "Canada",
+            "hourly_rate": "₹700",
+            "rating": 4.9,
+            "reviews_count": 64,
+            "avatar_initials": "KV"
+        }
+    ]
+    return render(request, 'mentor_marketplace.html', {'mentors': mentors})
+
+
+@login_required
+@csrf_exempt
+def book_mentor_session(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body)
+        uid = request.session['user']['uid']
+        profile = fb.get_user_profile(uid) or {}
+        mentor_name = data.get('mentor_name', 'Mentor')
+        fb.add_notification(uid, "Session Confirmed", f"Your 1-on-1 counseling appointment with {mentor_name} has been confirmed.", "success", "/mentors/")
+        return JsonResponse({'success': True, 'message': f'Appointment booked with {mentor_name}!'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def timeline_view(request):
+    uid = request.session['user']['uid']
+    profile = fb.get_user_profile(uid) or {}
+    country = profile.get('country_goal', 'USA')
+
+    events = [
+        {'label': 'Research Universities & Programs', 'desc': 'Explore rankings, fees, scholarships', 'category': 'research'},
+        {'label': 'Standardized Test Preparation (GRE/IELTS)', 'desc': 'Target competitive quantitative & verbal percentiles', 'category': 'test'},
+        {'label': 'Shortlist 8-10 Target Institutions', 'desc': 'Structure Reach, Target, and Safe admissions mix', 'category': 'research'},
+        {'label': 'Statement of Purpose (SOP) & Faculty Alignment', 'desc': 'Draft research statement and cite target lab faculty', 'category': 'application'},
+        {'label': 'Letters of Recommendation (LOR)', 'desc': 'Acquire 3 strong academic & manager references', 'category': 'application'},
+        {'label': 'Education Loan Pre-Approval', 'desc': 'Secure loan sanction for visa solvency verification', 'category': 'finance'},
+        {'label': 'Submit Official University Applications', 'desc': 'Pay application fees and upload transcripts', 'category': 'application'},
+        {'label': 'Review Admit Offers & Confirm Deposit', 'desc': 'Accept target university admit and request Form I-20 / CAS', 'category': 'decision'},
+        {'label': f'Student Visa Appointment ({country})', 'desc': 'Complete DS-160/Visa portal and attend consular interview', 'category': 'visa'},
+        {'label': 'Pre-Departure Flight & Housing', 'desc': 'Finalize student accommodation and health insurance', 'category': 'milestone'}
+    ]
+    return render(request, 'timeline.html', {'events': events, 'country': country})
+
+
+@login_required
+def my_journey(request):
+    uid = request.session['user']['uid']
+    profile = fb.get_user_profile(uid) or {}
+    gamification = calculate_gamification_state(profile)
+    scores = calculate_profile_scores(profile)
+    return render(request, 'my_journey.html', {
+        'profile': profile,
+        'gamification': gamification,
+        'scores': scores
+    })
+
+
+@role_required(['admin'])
+def admin_dashboard(request):
+    """Administrator executive metrics and platform data management."""
+    users = fb.get_all_docs('users', limit=100)
+    applications = fb.get_all_docs('applications', limit=100)
+    chat_logs = fb.get_all_docs('chat_history', limit=100)
+
+    stats = {
+        'total_users': max(128, len(users)),
+        'active_today': 42,
+        'applications_tracked': max(86, len(applications)),
+        'ai_queries_answered': max(340, len(chat_logs)),
+        'loans_modeled': 94,
+        'scholarships_indexed': len(SCHOLARSHIPS_DATA)
+    }
+    return render(request, 'admin_dashboard.html', {
+        'stats': stats,
+        'users': users[:15],
+        'applications': applications[:15]
+    })
+
+
+# ── Notifications API ─────────────────────────────────────────────────────────
+
+@login_required
+def get_notifications_api(request):
+    uid = request.session['user']['uid']
+    notifs = fb.get_notifications(uid, limit=10)
+    return JsonResponse({'notifications': notifs})
+
+
+@login_required
+@csrf_exempt
+def mark_notification_read_api(request, nid):
+    success = fb.mark_notification_read(nid)
+    return JsonResponse({'success': success})

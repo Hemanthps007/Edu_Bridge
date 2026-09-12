@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Compare Universities{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+    <div>
+      <span class="badge badge-blue mb-1">Side-by-Side Matrix &bull; Module 2</span>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">University Comparison Engine</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Evaluate tuition costs, admissions selectivity, and tailored profile odds across top institutions.</p>
+    </div>
+    <a href="{% url 'university_search' %}" class="btn-secondary text-xs">
+      <i class="fa-solid fa-plus"></i> Add More Universities
+    </a>
+  </div>
+
+  <!-- AI Synthesis Callout -->
+  {% if ai_verdict %}
+  <div class="p-4 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 flex items-start gap-3 shadow-sm">
+    <div class="w-7 h-7 rounded-lg bg-sky-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold">
+      <i class="fa-solid fa-brain"></i>
+    </div>
+    <div>
+      <div class="font-bold text-sky-950 uppercase tracking-wider text-[11px] mb-0.5">StudyBridge AI Decision Synthesis</div>
+      <p class="text-slate-700 leading-relaxed">{{ ai_verdict }}</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Comparison Matrix Table -->
+  <div class="glass rounded-2xl overflow-hidden shadow-sm border border-slate-200">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px]">
+            <th class="p-4 font-bold w-48">Feature / Metric</th>
+            {% for u in universities %}
+            <th class="p-4 font-bold text-slate-900 text-sm border-l border-slate-200 min-w-[200px]">
+              {{ u.name }}
+              <div class="text-[11px] font-normal text-slate-500">{{ u.city }}, {{ u.country }}</div>
+            </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 text-slate-700">
+          <tr>
+            <td class="p-4 font-semibold text-slate-900 bg-slate-50/50">World Ranking (QS)</td>
+            {% for u in universities %}
+            <td class="p-4 border-l border-slate-200 font-bold text-slate-900">
+              <span class="badge badge-blue">#{{ u.qs_ranking }}</span>
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="p-4 font-semibold text-slate-900 bg-slate-50/50">Annual Tuition (USD)</td>
+            {% for u in universities %}
+            <td class="p-4 border-l border-slate-200 font-bold text-slate-900">
+              ${{ u.tuition_usd|floatformat:0 }}
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="p-4 font-semibold text-slate-900 bg-slate-50/50">Annual Living Expenses</td>
+            {% for u in universities %}
+            <td class="p-4 border-l border-slate-200 text-slate-600">
+              ${{ u.living_cost_usd|floatformat:0 }}
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="p-4 font-semibold text-slate-900 bg-slate-50/50">Total Est. Cost (2 Yrs)</td>
+            {% for u in universities %}
+            <td class="p-4 border-l border-slate-200 font-bold text-slate-900">
+              ${{ u.tuition_usd|add:u.living_cost_usd|add:u.tuition_usd|add:u.living_cost_usd|floatformat:0 }}
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="p-4 font-semibold text-slate-900 bg-slate-50/50">Acceptance Rate</td>
+            {% for u in universities %}
+            <td class="p-4 border-l border-slate-200 font-medium">
+              {{ u.acceptance_rate }}%
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="p-4 font-semibold text-slate-900 bg-slate-50/50">Admission Probability</td>
+            {% for u in universities %}
+            <td class="p-4 border-l border-slate-200">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-sm text-slate-900">{{ u.admission_probability }}%</span>
+                <span class="badge {% if u.category == 'Safe' %}badge-green{% elif u.category == 'Target' %}badge-amber{% else %}badge-rose{% endif %} text-[10px]">
+                  {{ u.category }}
+                </span>
+              </div>
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="p-4 font-semibold text-slate-900 bg-slate-50/50">Application Deadline</td>
+            {% for u in universities %}
+            <td class="p-4 border-l border-slate-200 font-medium text-slate-600">
+              {{ u.application_deadline }}
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="p-4 font-semibold text-slate-900 bg-slate-50/50">Actions</td>
+            {% for u in universities %}
+            <td class="p-4 border-l border-slate-200">
+              <form method="post" action="{% url 'application_tracker' %}">
+                {% csrf_token %}
+                <input type="hidden" name="university_name" value="{{ u.name }}" />
+                <input type="hidden" name="program_name" value="{{ u.popular_programs.0|default:'MS Computer Science' }}" />
+                <input type="hidden" name="deadline" value="{{ u.application_deadline }}" />
+                <button type="submit" class="btn-primary text-xs py-1.5 px-3">
+                  <i class="fa-solid fa-bookmark"></i> Shortlist
+                </button>
+              </form>
+            </td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,129 +1,184 @@
 {% extends 'base.html' %}
-{% block title %}Admission Predictor{% endblock %}
+{% block title %}ML Admission Predictor{% endblock %}
 {% block content %}
-<div style="max-width:900px;margin:0 auto;padding:32px 24px;">
-  <div style="text-align:center;margin-bottom:40px;" data-aos="fade-up">
-    <span class="badge badge-orange" style="margin-bottom:16px;">ML-Powered</span>
-    <h1 style="font-size:2.4rem;font-weight:900;color:#0F172A;margin:0 0 12px;">Admission <span class="grad-text-warm">Predictor</span></h1>
-    <p style="color:#475569;max-width:520px;margin:0 auto;">Know your chances before applying. Our algorithm analyses your profile against real admission data from 500+ programs globally.</p>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;">
+<div class="max-w-5xl mx-auto px-4 py-8 space-y-8" x-data="{
+    gre: {{ form_data.gre|default:form_defaults.gre }},
+    gpa: {{ form_data.gpa|default:form_defaults.gpa }},
+    ielts: {{ form_data.ielts|default:form_defaults.ielts }},
+    work_exp: {{ form_data.work_exp|default:form_defaults.work_exp }},
+    research: {{ form_data.research|default:form_defaults.research }},
+    internships: {{ form_data.internships|default:form_defaults.internships }},
+    target_rank: {{ form_data.target_rank|default:form_defaults.target_rank }}
+}">
 
-    <div class="glass" style="border-radius:20px;padding:28px;" data-aos="fade-right">
-      <form method="post" style="display:flex;flex-direction:column;gap:16px;">
-        {% csrf_token %}
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">GRE Score (260-340)</label>
-          <input type="number" name="gre" min="260" max="340" value="{{ form_data.gre|default:'310' }}" class="inp"/>
-        </div>
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">GPA (out of 4.0)</label>
-          <input type="number" name="gpa" step="0.1" min="2.0" max="4.0" value="{{ form_data.gpa|default:'3.2' }}" class="inp"/>
-        </div>
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Work Experience (years)</label>
-          <input type="number" name="work_exp" min="0" max="10" value="{{ form_data.work_exp|default:'0' }}" class="inp"/>
-        </div>
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Research Papers</label>
-          <input type="number" name="research" min="0" max="20" value="{{ form_data.research|default:'0' }}" class="inp"/>
-        </div>
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Internships</label>
-          <input type="number" name="internships" min="0" max="10" value="{{ form_data.internships|default:'0' }}" class="inp"/>
-        </div>
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Projects / Competitions</label>
-          <input type="number" name="projects" min="0" max="20" value="{{ form_data.projects|default:'0' }}" class="inp"/>
-        </div>
-        <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:8px;">Target University Rank</label>
-          <select name="target_rank" class="inp">
-            <option value="10"  {% if form_data.target_rank == '10'  %}selected{% endif %}>Top 10</option>
-            <option value="25"  {% if form_data.target_rank == '25'  %}selected{% endif %}>Top 25</option>
-            <option value="50"  {% if not form_data.target_rank or form_data.target_rank == '50' %}selected{% endif %}>Top 50</option>
-            <option value="100" {% if form_data.target_rank == '100' %}selected{% endif %}>Top 100</option>
-          </select>
-        </div>
-        <button type="submit" class="btn-primary" style="justify-content:center;">
-          <i class="fa-solid fa-brain"></i> Predict My Chances
-        </button>
-      </form>
+  <!-- Header -->
+  <div class="pb-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <span class="badge badge-blue mb-1">ML Scoring Model &bull; Module 3</span>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">University Admission Predictor</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Random forest scoring engine with SHAP factor contributions &amp; reach/target classification.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="badge badge-slate text-xs"><i class="fa-solid fa-brain text-[10px]"></i> Trained on 40,000+ Profiles</span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+    <!-- Inputs Column (Left) -->
+    <div class="lg:col-span-6 space-y-5">
+      <div class="glass rounded-2xl p-6 shadow-sm border border-slate-200">
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 pb-2 border-b border-slate-100">
+          Candidate Profile Inputs
+        </h2>
+
+        <form method="post" action="{% url 'admission_predictor' %}" class="space-y-4">
+          {% csrf_token %}
+
+          <!-- Target University World Rank -->
+          <div>
+            <div class="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1.5">
+              <span>Target University World Rank</span>
+              <span class="text-sky-600 font-bold" x-text="'Top #' + target_rank"></span>
+            </div>
+            <input type="range" name="target_rank" min="1" max="150" x-model="target_rank" class="w-full accent-slate-900" />
+            <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+              <span>#1 (MIT/Stanford)</span>
+              <span>#50 (UT Austin)</span>
+              <span>#150 (Public State)</span>
+            </div>
+          </div>
+
+          <!-- Undergraduate CGPA -->
+          <div>
+            <div class="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1.5">
+              <span>Undergraduate CGPA</span>
+              <span class="text-slate-900 font-bold" x-text="gpa"></span>
+            </div>
+            <input type="number" step="0.01" name="gpa" x-model="gpa" class="inp text-xs font-bold text-slate-900" />
+          </div>
+
+          <!-- GRE Score -->
+          <div>
+            <div class="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1.5">
+              <span>GRE Score (260 - 340)</span>
+              <span class="text-slate-900 font-bold" x-text="gre"></span>
+            </div>
+            <input type="range" name="gre" min="280" max="340" x-model="gre" class="w-full accent-slate-900" />
+            <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+              <span>280 (Min)</span>
+              <span>315 (Competitive)</span>
+              <span>340 (Max)</span>
+            </div>
+          </div>
+
+          <!-- IELTS / English Score -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">IELTS Score (0-9)</label>
+              <input type="number" step="0.5" name="ielts" x-model="ielts" class="inp text-xs" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Work Exp (Years)</label>
+              <input type="number" name="work_exp" x-model="work_exp" class="inp text-xs" />
+            </div>
+          </div>
+
+          <!-- Research & Internships -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Research Papers</label>
+              <input type="number" name="research" x-model="research" class="inp text-xs" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Internships</label>
+              <input type="number" name="internships" x-model="internships" class="inp text-xs" />
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" class="btn-primary w-full justify-center text-xs py-2.5">
+              <i class="fa-solid fa-calculator"></i> Calculate Admission Probability
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
-    <div style="display:flex;flex-direction:column;gap:20px;">
-      {% if calc %}
-      <div class="glass" style="border-radius:20px;padding:28px;text-align:center;" data-aos="fade-left">
-        <div style="font-size:13px;color:#475569;margin-bottom:16px;">Admission Probability</div>
-        <div id="probCircle" style="position:relative;width:160px;height:160px;margin:0 auto 16px;">
-          <svg width="160" height="160" viewBox="0 0 160 160" style="position:absolute;top:0;left:0;">
-            <circle cx="80" cy="80" r="66" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="12"/>
-            <circle id="probArc" cx="80" cy="80" r="66" fill="none" stroke-width="12" stroke-linecap="round"
-                    stroke-dasharray="0 414.7" transform="rotate(-90 80 80)"/>
-          </svg>
-          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
-            <div id="probNum" style="font-size:2.8rem;font-weight:900;">{{ probability }}%</div>
+    <!-- Output Column (Right) -->
+    <div class="lg:col-span-6 space-y-5">
+      {% if calc and result %}
+      <!-- Prediction Gauge Card -->
+      <div class="glass rounded-2xl p-6 shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+          <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">Prediction Outcome</span>
+          <span class="badge {% if result.category == 'Safe' %}badge-green{% elif result.category == 'Target' %}badge-amber{% else %}badge-rose{% endif %} font-bold">
+            {{ result.category }} Tier
+          </span>
+        </div>
+
+        <div class="flex items-baseline gap-2 mb-2">
+          <span class="text-4xl font-black text-slate-900">{{ result.probability }}%</span>
+          <span class="text-xs text-slate-500">Estimated Admission Probability</span>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mb-6">
+          <div class="h-2.5 rounded-full transition-all duration-700 {% if result.category == 'Safe' %}bg-emerald-500{% elif result.category == 'Target' %}bg-amber-500{% else %}bg-rose-500{% endif %}"
+               style="width: {{ result.probability }}%;"></div>
+        </div>
+
+        <!-- SHAP Factor Breakdown -->
+        <div class="space-y-3">
+          <div class="text-xs font-bold text-slate-900 uppercase tracking-wider">Factor Contribution Analysis (SHAP)</div>
+          <div class="space-y-2 text-xs">
+            {% for item in result.factor_breakdown %}
+            <div class="p-2 rounded-lg bg-slate-50 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full {% if item.impact > 0 %}bg-emerald-500{% else %}bg-rose-500{% endif %}"></span>
+                <span class="font-medium text-slate-700">{{ item.factor }}</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-[11px]">
+                <span class="text-slate-400">({{ item.value }})</span>
+                <span class="font-bold {% if item.impact > 0 %}text-emerald-700{% else %}text-rose-700{% endif %}">
+                  {% if item.impact > 0 %}+{% endif %}{{ item.impact }}
+                </span>
+              </div>
+            </div>
+            {% endfor %}
           </div>
         </div>
-        <div style="font-weight:700;color:#0F172A;font-size:1.1rem;">{{ grade }} Profile</div>
-        <div style="font-size:13px;color:#475569;margin-top:4px;">Overall Score: {{ score }}/100</div>
-      </div>
 
-      {% if strengths %}
-      <div class="glass-teal" style="border-radius:16px;padding:20px;" data-aos="fade-up">
-        <h3 style="font-weight:600;color:#34D399;margin:0 0 12px;font-size:14px;display:flex;align-items:center;gap:8px;">
-          <i class="fa-solid fa-circle-check"></i> Strengths
-        </h3>
-        <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;">
-          {% for s in strengths %}
-          <li style="font-size:13px;color:#475569;display:flex;align-items:center;gap:8px;">
-            <span style="color:#34D399;font-size:11px;">&#10003;</span>{{ s }}
-          </li>
+        <!-- Actionable Insights -->
+        <div class="mt-6 pt-4 border-t border-slate-100 space-y-2 text-xs">
+          {% for s in result.strengths %}
+          <div class="flex items-start gap-2 text-emerald-800 bg-emerald-50/50 p-2 rounded-lg">
+            <i class="fa-solid fa-check text-emerald-600 mt-0.5"></i>
+            <span>{{ s }}</span>
+          </div>
           {% endfor %}
-        </ul>
-      </div>
-      {% endif %}
-
-      {% if gaps %}
-      <div class="glass-orange" style="border-radius:16px;padding:20px;" data-aos="fade-up">
-        <h3 style="font-weight:600;color:#FB923C;margin:0 0 12px;font-size:14px;display:flex;align-items:center;gap:8px;">
-          <i class="fa-solid fa-triangle-exclamation"></i> Areas to Improve
-        </h3>
-        <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;">
-          {% for g in gaps %}
-          <li style="font-size:13px;color:#475569;display:flex;align-items:center;gap:8px;">
-            <span style="color:#FB923C;font-size:11px;">&#8594;</span>{{ g }}
-          </li>
+          {% for g in result.gaps %}
+          <div class="flex items-start gap-2 text-amber-800 bg-amber-50/50 p-2 rounded-lg">
+            <i class="fa-solid fa-circle-exclamation text-amber-600 mt-0.5"></i>
+            <span>{{ g }}</span>
+          </div>
           {% endfor %}
-        </ul>
+        </div>
       </div>
-      {% endif %}
-
       {% else %}
-      <div class="glass" style="border-radius:20px;padding:64px 24px;text-align:center;" data-aos="fade-in">
-        <div class="afloat" style="font-size:3.5rem;margin-bottom:16px;">&#127919;</div>
-        <h3 style="font-weight:700;color:#0F172A;margin:0 0 8px;">Enter your profile</h3>
-        <p style="color:#475569;font-size:13px;margin:0;">We'll calculate your admission probability and tell you exactly what to improve.</p>
+      <!-- Placeholder State -->
+      <div class="glass rounded-2xl p-8 text-center text-slate-400 border border-slate-200 flex flex-col items-center justify-center min-h-[380px]">
+        <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center text-xl mb-3">
+          <i class="fa-solid fa-chart-pie"></i>
+        </div>
+        <h3 class="text-sm font-bold text-slate-700 mb-1">Awaiting Profile Parameters</h3>
+        <p class="text-xs text-slate-500 max-w-xs leading-relaxed">
+          Adjust the candidate scores and target university selectivity on the left, then click Calculate.
+        </p>
       </div>
       {% endif %}
     </div>
+
   </div>
 </div>
-{% endblock %}
-{% block extra_scripts %}
-<script>
-// Animate the SVG progress arc using JavaScript — avoids CSS calc() with template vars
-var prob = parseInt('{{ probability|default:0 }}', 10);
-var arc = document.getElementById('probArc');
-var num = document.getElementById('probNum');
-if (arc && prob > 0) {
-  var circumference = 414.7;
-  var dash = (prob / 100) * circumference;
-  arc.setAttribute('stroke-dasharray', dash + ' ' + circumference);
-  var color = prob >= 65 ? '#10B981' : prob >= 45 ? '#F97316' : '#EF4444';
-  var numColor = prob >= 65 ? '#34D399' : prob >= 45 ? '#FB923C' : '#F87171';
-  arc.setAttribute('stroke', color);
-  if (num) num.style.color = numColor;
-}
-</script>
 {% endblock %}

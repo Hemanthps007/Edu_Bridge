@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% block title %}Application Tracker{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8 space-y-6" x-data="{ showModal: false }">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+    <div>
+      <span class="badge badge-blue mb-1">Checklists &amp; Deadlines &bull; Module 6</span>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">University Application Tracker</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Manage admissions milestones, verify document readiness, and monitor decision dates.</p>
+    </div>
+    <button @click="showModal = true" class="btn-primary text-xs">
+      <i class="fa-solid fa-plus"></i> Track New University
+    </button>
+  </div>
+
+  <!-- Applications List -->
+  <div class="space-y-4">
+    {% for app in applications %}
+    <div class="glass rounded-2xl p-6 shadow-sm border border-slate-200" x-data="{
+        status: '{{ app.status|default:'shortlisted' }}',
+        checklist: {
+          profile_created: {{ app.checklist.profile_created|yesno:'true,false'|default:'true' }},
+          docs_uploaded: {{ app.checklist.docs_uploaded|yesno:'true,false'|default:'false' }},
+          sop_ready: {{ app.checklist.sop_ready|yesno:'true,false'|default:'false' }},
+          lor_received: {{ app.checklist.lor_received|yesno:'true,false'|default:'false' }},
+          fee_paid: {{ app.checklist.fee_paid|yesno:'true,false'|default:'false' }},
+          submitted: {{ app.checklist.submitted|yesno:'true,false'|default:'false' }}
+        }
+    }">
+      <!-- University Banner -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 mb-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-semibold text-slate-400">{{ app.term|default:'Fall 2027' }}</span>
+            <span class="text-slate-300">&bull;</span>
+            <span class="text-xs font-semibold text-slate-600">Deadline: {{ app.deadline }}</span>
+          </div>
+          <h2 class="text-lg font-bold text-slate-900">{{ app.university_name }}</h2>
+          <div class="text-xs text-slate-500">{{ app.program_name }}</div>
+        </div>
+
+        <!-- Status Dropdown -->
+        <div class="flex items-center gap-2">
+          <select x-model="status" @change="
+            fetch('{% url 'update_application_status' %}', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ app_id: '{{ app.id }}', status: status })
+            });
+          " class="inp text-xs font-semibold w-36">
+            <option value="shortlisted">Shortlisted</option>
+            <option value="in_review">In Review</option>
+            <option value="submitted">Submitted</option>
+            <option value="interview">Interview</option>
+            <option value="admitted">Admitted</option>
+            <option value="waitlisted">Waitlisted</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Checklist Items -->
+      <div>
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Milestone Checklist</div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
+          <label class="p-2.5 rounded-xl border border-slate-200 flex items-center gap-2 cursor-pointer hover:bg-slate-50"
+                 :class="checklist.profile_created ? 'bg-emerald-50/50 border-emerald-200 text-emerald-800' : 'text-slate-600'">
+            <input type="checkbox" x-model="checklist.profile_created" @change="
+              fetch('{% url 'update_application_status' %}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ app_id: '{{ app.id }}', checklist: checklist })
+              });
+            " class="rounded text-emerald-600" />
+            <span class="font-medium">Profile Setup</span>
+          </label>
+
+          <label class="p-2.5 rounded-xl border border-slate-200 flex items-center gap-2 cursor-pointer hover:bg-slate-50"
+                 :class="checklist.docs_uploaded ? 'bg-emerald-50/50 border-emerald-200 text-emerald-800' : 'text-slate-600'">
+            <input type="checkbox" x-model="checklist.docs_uploaded" @change="
+              fetch('{% url 'update_application_status' %}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ app_id: '{{ app.id }}', checklist: checklist })
+              });
+            " class="rounded text-emerald-600" />
+            <span class="font-medium">Transcripts</span>
+          </label>
+
+          <label class="p-2.5 rounded-xl border border-slate-200 flex items-center gap-2 cursor-pointer hover:bg-slate-50"
+                 :class="checklist.sop_ready ? 'bg-emerald-50/50 border-emerald-200 text-emerald-800' : 'text-slate-600'">
+            <input type="checkbox" x-model="checklist.sop_ready" @change="
+              fetch('{% url 'update_application_status' %}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ app_id: '{{ app.id }}', checklist: checklist })
+              });
+            " class="rounded text-emerald-600" />
+            <span class="font-medium">SOP Finalized</span>
+          </label>
+
+          <label class="p-2.5 rounded-xl border border-slate-200 flex items-center gap-2 cursor-pointer hover:bg-slate-50"
+                 :class="checklist.lor_received ? 'bg-emerald-50/50 border-emerald-200 text-emerald-800' : 'text-slate-600'">
+            <input type="checkbox" x-model="checklist.lor_received" @change="
+              fetch('{% url 'update_application_status' %}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ app_id: '{{ app.id }}', checklist: checklist })
+              });
+            " class="rounded text-emerald-600" />
+            <span class="font-medium">3 LORs Sent</span>
+          </label>
+
+          <label class="p-2.5 rounded-xl border border-slate-200 flex items-center gap-2 cursor-pointer hover:bg-slate-50"
+                 :class="checklist.fee_paid ? 'bg-emerald-50/50 border-emerald-200 text-emerald-800' : 'text-slate-600'">
+            <input type="checkbox" x-model="checklist.fee_paid" @change="
+              fetch('{% url 'update_application_status' %}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ app_id: '{{ app.id }}', checklist: checklist })
+              });
+            " class="rounded text-emerald-600" />
+            <span class="font-medium">Fee Submitted</span>
+          </label>
+
+          <label class="p-2.5 rounded-xl border border-slate-200 flex items-center gap-2 cursor-pointer hover:bg-slate-50"
+                 :class="checklist.submitted ? 'bg-emerald-50/50 border-emerald-200 text-emerald-800' : 'text-slate-600'">
+            <input type="checkbox" x-model="checklist.submitted" @change="
+              fetch('{% url 'update_application_status' %}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ app_id: '{{ app.id }}', checklist: checklist })
+              });
+            " class="rounded text-emerald-600" />
+            <span class="font-medium">Final Submit</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="glass rounded-2xl p-12 text-center text-slate-400 border border-slate-200">
+      <i class="fa-regular fa-folder-open text-3xl mb-3"></i>
+      <h3 class="text-sm font-bold text-slate-700 mb-1">No University Applications Tracked</h3>
+      <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">Add your target universities to track document requirements, deadlines, and submission milestones.</p>
+      <button @click="showModal = true" class="btn-primary text-xs">
+        <i class="fa-solid fa-plus"></i> Add First University
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Add Modal -->
+  <div x-show="showModal" style="display:none;" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="glass rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-200 afu" @click.outside="showModal = false">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <h3 class="text-sm font-bold text-slate-900">Track New Application</h3>
+        <button @click="showModal = false" class="text-slate-400 hover:text-slate-600">&times;</button>
+      </div>
+
+      <form method="post" action="{% url 'application_tracker' %}" class="space-y-3.5 text-xs">
+        {% csrf_token %}
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">University Name</label>
+          <input type="text" name="university_name" required placeholder="e.g. Carnegie Mellon University" class="inp text-xs" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Degree Program</label>
+          <input type="text" name="program_name" value="MS Computer Science" class="inp text-xs" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Application Deadline</label>
+            <input type="text" name="deadline" value="Dec 15, 2026" class="inp text-xs" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Intake Term</label>
+            <input type="text" name="term" value="Fall 2027" class="inp text-xs" />
+          </div>
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" @click="showModal = false" class="btn-secondary text-xs">Cancel</button>
+          <button type="submit" class="btn-primary text-xs">Save to Tracker</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

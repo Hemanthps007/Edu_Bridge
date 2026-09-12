@@ -68,8 +68,28 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'studybridge.wsgi.application'
 
-# No ORM — using Firebase Firestore for all data
-DATABASES = {}
+# Dual database configuration: SQLite for local/demo/tests, PostgreSQL when DATABASE_URL provided
+if os.getenv('DATABASE_URL'):
+    # In production PostgreSQL
+    import urllib.parse as urlparse
+    url = urlparse.urlparse(os.environ['DATABASE_URL'])
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': url.path[1:],
+            'USER': url.username,
+            'PASSWORD': url.password,
+            'HOST': url.hostname,
+            'PORT': url.port or 5432,
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 if os.getenv('VERCEL') == '1':
     SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'

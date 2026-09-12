@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}AI Study Planner &amp; Timetable{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+
+  <!-- Header -->
+  <div class="pb-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <span class="badge badge-blue mb-1">Post-Admission &amp; Prep &bull; Module 7</span>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">AI Personal Study Assistant</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Automated study timetables, test prep countdowns, and weekly milestone tracking.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="badge badge-green font-semibold text-xs">Weekly Progress: {{ plan.weekly_completion_pct }}%</span>
+    </div>
+  </div>
+
+  <!-- Countdown Deadlines Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    {% for dl in plan.upcoming_deadlines %}
+    <div class="glass rounded-xl p-4 border border-slate-200 flex items-center justify-between shadow-sm">
+      <div>
+        <div class="text-[10px] uppercase font-bold text-slate-400">Target Milestone</div>
+        <div class="font-bold text-slate-900 text-sm mt-0.5">{{ dl.name }}</div>
+        <div class="text-[11px] text-slate-500">{{ dl.date }}</div>
+      </div>
+      <div class="text-right">
+        <span class="text-2xl font-black text-slate-900">{{ dl.days_left }}</span>
+        <div class="text-[10px] uppercase font-bold text-slate-400">Days Left</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Weekly Timetable -->
+  <div class="glass rounded-2xl p-6 shadow-sm border border-slate-200">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 mb-6">
+      <div>
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Weekly Adaptive Study Timetable</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Targeting {{ hours }} hours of focused weekly study &amp; error analysis.</p>
+      </div>
+
+      <form method="get" action="{% url 'study_planner' %}" class="flex items-center gap-2">
+        <label class="text-xs font-semibold text-slate-600">Hours/Week:</label>
+        <select name="hours" onchange="this.form.submit()" class="inp text-xs font-bold py-1 px-2.5 w-24">
+          <option value="10" {% if hours == 10 %}selected{% endif %}>10 Hrs</option>
+          <option value="15" {% if hours == 15 %}selected{% endif %}>15 Hrs</option>
+          <option value="20" {% if hours == 20 %}selected{% endif %}>20 Hrs</option>
+          <option value="25" {% if hours == 25 %}selected{% endif %}>25 Hrs</option>
+        </select>
+      </form>
+    </div>
+
+    <!-- Day cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+      {% for day in plan.weekly_schedule %}
+      <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-200 mb-2">
+          <span class="font-bold text-slate-900 text-sm">{{ day.day }}</span>
+          <span class="badge badge-slate text-[10px]">{{ day.hours }} Hours</span>
+        </div>
+        <div class="font-semibold text-sky-800 text-[11px] mb-2">{{ day.focus }}</div>
+        <ul class="space-y-1 text-slate-600">
+          {% for task in day.tasks %}
+          <li class="flex items-start gap-1.5">
+            <i class="fa-solid fa-circle-check text-slate-300 mt-1 text-[9px]"></i>
+            <span>{{ task }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

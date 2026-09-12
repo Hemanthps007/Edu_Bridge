@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}Mentor Marketplace{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8 space-y-6" x-data="{
+    bookingModal: false,
+    selectedMentor: null,
+    topic: 'Admissions Strategy & SOP Review',
+    bookingSuccess: false
+}">
+
+  <!-- Header -->
+  <div class="pb-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <span class="badge badge-blue mb-1">1-on-1 Advisory &bull; Module 8</span>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">Verified Alumni &amp; Industry Mentors</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Book tailored mock interviews, SOP reviews, and visa prep sessions with experienced international graduates.</p>
+    </div>
+  </div>
+
+  <!-- Mentors Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {% for m in mentors %}
+    <div class="glass glass-hover rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 rounded-xl bg-slate-900 text-white font-bold flex items-center justify-center text-sm">
+            {{ m.avatar_initials }}
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm">{{ m.name }}</h3>
+            <div class="text-[11px] text-slate-500">{{ m.title }}</div>
+          </div>
+        </div>
+
+        <div class="space-y-2 text-xs mb-4">
+          <div class="flex items-center gap-1.5 text-slate-600">
+            <i class="fa-solid fa-graduation-cap text-slate-400"></i>
+            <span>{{ m.education }}</span>
+          </div>
+          <div class="flex items-center gap-1.5 text-slate-600">
+            <i class="fa-solid fa-location-dot text-slate-400"></i>
+            <span>Based in {{ m.country }}</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-[11px] text-slate-700 font-medium">
+            {{ m.specialization }}
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs py-2 border-t border-slate-100 mb-4">
+          <div class="flex items-center gap-1 text-amber-600 font-bold">
+            <i class="fa-solid fa-star text-xs"></i>
+            <span>{{ m.rating }}</span>
+            <span class="text-slate-400 font-normal">({{ m.reviews_count }} reviews)</span>
+          </div>
+          <div class="font-bold text-slate-900">{{ m.hourly_rate }}/session</div>
+        </div>
+      </div>
+
+      <button @click="selectedMentor = {{ m|escapejs }}; bookingModal = true; bookingSuccess = false;"
+              class="btn-primary w-full justify-center text-xs py-2">
+        <i class="fa-regular fa-calendar"></i> Book 1-on-1 Consultation
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Booking Modal -->
+  <div x-show="bookingModal" style="display:none;" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="glass rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-200 afu" @click.outside="bookingModal = false">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <h3 class="text-sm font-bold text-slate-900">Schedule Mentorship Session</h3>
+        <button @click="bookingModal = false" class="text-slate-400 hover:text-slate-600">&times;</button>
+      </div>
+
+      <template x-if="selectedMentor && !bookingSuccess">
+        <div class="space-y-4 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+            <div>
+              <div class="font-bold text-slate-900" x-text="selectedMentor.name"></div>
+              <div class="text-[11px] text-slate-500" x-text="selectedMentor.title"></div>
+            </div>
+            <span class="badge badge-blue" x-text="selectedMentor.hourly_rate"></span>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Session Topic Focus</label>
+            <select x-model="topic" class="inp text-xs font-semibold">
+              <option value="Admissions Strategy & SOP Review">Admissions Strategy &amp; SOP Review</option>
+              <option value="Technical Interview & Coding Prep">Technical Interview &amp; Coding Prep</option>
+              <option value="F-1 Visa Consular Interview Preparation">F-1 Visa Consular Interview Preparation</option>
+              <option value="Post-Study Job Search & OPT Strategy">Post-Study Job Search &amp; OPT Strategy</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Preferred Date &amp; Slot</label>
+            <input type="datetime-local" class="inp text-xs font-semibold" value="2026-10-15T18:30" />
+          </div>
+
+          <div class="pt-2 flex justify-end gap-2">
+            <button @click="bookingModal = false" class="btn-secondary text-xs">Cancel</button>
+            <button @click="
+              fetch('{% url 'book_mentor_session' %}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ mentor_name: selectedMentor.name, topic: topic })
+              }).then(r => r.json()).then(res => {
+                if (res.success) bookingSuccess = true;
+              });
+            " class="btn-primary text-xs">
+              Confirm Appointment
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <template x-if="bookingSuccess">
+        <div class="py-6 text-center space-y-3">
+          <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl mx-auto">
+            <i class="fa-solid fa-check"></i>
+          </div>
+          <h4 class="font-bold text-slate-900 text-sm">Session Successfully Confirmed</h4>
+          <p class="text-xs text-slate-500">Google Meet invitation link has been dispatched to your registered email.</p>
+          <button @click="bookingModal = false" class="btn-primary text-xs py-2 px-4 mt-2">Done</button>
+        </div>
+      </template>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

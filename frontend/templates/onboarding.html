@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% block title %}Student Profile Onboarding{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-12" x-data="{
+    step: 1,
+    cgpa: '{{ profile.degree_cgpa|default:8.4 }}',
+    gre: '{{ profile.gre_score|default:315 }}',
+    ielts: '{{ profile.ielts_score|default:7.5 }}',
+    tenth: '{{ profile.tenth_pct|default:85 }}',
+    twelfth: '{{ profile.twelfth_pct|default:86 }}',
+    budget: '{{ profile.budget|default:3500000 }}',
+    academicScore: 84,
+    readinessScore: 78
+}">
+  <!-- Progress Header -->
+  <div class="text-center mb-8">
+    <span class="badge badge-blue mb-2">Step <span x-text="step"></span> of 3 &bull; Profile Readiness</span>
+    <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Set Up Your Academic Profile</h1>
+    <p class="text-xs sm:text-sm text-slate-500 mt-1">StudyBridge AI personalizes admissions, ROI calculations, and scholarships from your profile.</p>
+
+    <div class="w-full bg-slate-200 h-1.5 rounded-full mt-6 overflow-hidden max-w-md mx-auto">
+      <div class="bg-slate-900 h-1.5 transition-all duration-300 rounded-full"
+           :style="'width: ' + (step === 1 ? '33%' : step === 2 ? '66%' : '100%')"></div>
+    </div>
+  </div>
+
+  <!-- Multi-step Form Card -->
+  <div class="glass rounded-2xl p-6 sm:p-8 shadow-sm">
+    <form method="post" action="{% url 'onboarding' %}">
+      {% csrf_token %}
+
+      <!-- Step 1: Personal & Country Goals -->
+      <div x-show="step === 1" class="space-y-5">
+        <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
+          <i class="fa-solid fa-user text-slate-400"></i>
+          <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">1. Basic Background &amp; Target Goal</h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Full Name</label>
+            <input type="text" name="name" value="{{ profile.name|default:current_user.name|default:'' }}" required class="inp" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Current City / Location</label>
+            <input type="text" name="city" value="{{ profile.city|default:'Bengaluru' }}" required class="inp" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Age</label>
+            <input type="number" name="age" value="{{ profile.age|default:22 }}" min="16" max="60" class="inp" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Current Education</label>
+            <select name="education_level" class="inp">
+              <option value="Undergraduate">Final Year Bachelor's (B.Tech/BE/BSc)</option>
+              <option value="Graduate">Completed Bachelor's</option>
+              <option value="Working Professional">Working Professional</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Target Study Country</label>
+            <select name="country_goal" class="inp font-semibold text-slate-800">
+              <option value="USA">United States (USA)</option>
+              <option value="UK">United Kingdom (UK)</option>
+              <option value="Canada">Canada</option>
+              <option value="Germany">Germany</option>
+              <option value="Singapore">Singapore</option>
+              <option value="Australia">Australia</option>
+              <option value="India">India (IITs / IISc)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Target Graduate Program</label>
+          <input type="text" name="target_program" value="{{ profile.target_program|default:'MS Computer Science' }}" placeholder="e.g. MS Computer Science, Master of Business Analytics" class="inp" />
+        </div>
+
+        <div class="flex justify-end pt-4">
+          <button type="button" @click="step = 2" class="btn-primary">
+            Next: Academic Scores <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Academic Scores & Exams -->
+      <div x-show="step === 2" style="display:none;" class="space-y-5">
+        <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
+          <i class="fa-solid fa-graduation-cap text-slate-400"></i>
+          <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">2. Academic Track Record &amp; Test Scores</h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">10th Grade Percentage</label>
+            <input type="number" step="0.1" name="tenth_pct" x-model="tenth" class="inp" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">12th Grade Percentage</label>
+            <input type="number" step="0.1" name="twelfth_pct" x-model="twelfth" class="inp" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Undergraduate CGPA (out of 10 or 4.0)</label>
+            <input type="number" step="0.01" name="degree_cgpa" x-model="cgpa" class="inp font-bold text-slate-900" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">GRE Score (Optional / Est. 260-340)</label>
+            <input type="number" name="gre_score" x-model="gre" class="inp" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">IELTS / TOEFL Score (IELTS 0-9)</label>
+            <input type="number" step="0.5" name="ielts_score" x-model="ielts" class="inp" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Work Exp (Years)</label>
+            <input type="number" name="work_exp" value="{{ profile.work_exp|default:1 }}" min="0" max="15" class="inp" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Internships Count</label>
+            <input type="number" name="internships" value="{{ profile.internships|default:2 }}" min="0" max="10" class="inp" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Research Publications</label>
+            <input type="number" name="research_papers" value="{{ profile.research_papers|default:0 }}" min="0" max="10" class="inp" />
+          </div>
+        </div>
+
+        <div class="flex justify-between pt-4">
+          <button type="button" @click="step = 1" class="btn-secondary">
+            <i class="fa-solid fa-arrow-left"></i> Previous
+          </button>
+          <button type="button" @click="step = 3" class="btn-primary">
+            Next: Budget &amp; Interests <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: Financial Budget & Fields -->
+      <div x-show="step === 3" style="display:none;" class="space-y-5">
+        <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
+          <i class="fa-solid fa-wallet text-slate-400"></i>
+          <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">3. Budget &amp; Technical Interests</h2>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Total Family Budget / Financial Capacity (INR)</label>
+          <select name="budget" class="inp font-semibold">
+            <option value="1500000">₹10 Lakhs – ₹20 Lakhs (Moderate / Germany / Public)</option>
+            <option value="3500000" selected>₹25 Lakhs – ₹45 Lakhs (Standard US / UK / Canada)</option>
+            <option value="5500000">₹50 Lakhs – ₹70 Lakhs+ (Ivy League / Private Tier-1)</option>
+          </select>
+          <p class="text-[11px] text-slate-400 mt-1">Used to personalize education loan quotes and scholarship eligibility.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Areas of Interest (Select all that apply)</label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+              <input type="checkbox" name="interests" value="AI & Machine Learning" checked class="rounded text-sky-600" />
+              <span>AI &amp; Machine Learning</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+              <input type="checkbox" name="interests" value="Data Science & Analytics" checked class="rounded text-sky-600" />
+              <span>Data Science</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+              <input type="checkbox" name="interests" value="Software Engineering" checked class="rounded text-sky-600" />
+              <span>Software Engineering</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+              <input type="checkbox" name="interests" value="Cloud & Cyber Security" class="rounded text-sky-600" />
+              <span>Cybersecurity &amp; Cloud</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+              <input type="checkbox" name="interests" value="Business & Analytics" class="rounded text-sky-600" />
+              <span>MBA &amp; Analytics</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+              <input type="checkbox" name="interests" value="Quantitative Finance" class="rounded text-sky-600" />
+              <span>Quantitative Finance</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex justify-between pt-6 border-t border-slate-100">
+          <button type="button" @click="step = 2" class="btn-secondary">
+            <i class="fa-solid fa-arrow-left"></i> Previous
+          </button>
+          <button type="submit" class="btn-primary">
+            <i class="fa-solid fa-circle-check"></i> Complete Profile &amp; Go to Dashboard
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

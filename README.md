@@ -1,54 +1,96 @@
 Live Link : https://edu-bridge-007.vercel.app/
 
-# 🎓 StudyBridge — AI-Powered Student Engagement Ecosystem
+# StudyBridge — AI-Powered Higher-Education Platform
 
-> Navigate Your Path to Global Excellence
+> End-to-End Decision, Financing, and Application Ecosystem
 
-## 🚀 Quick Start
+StudyBridge is an enterprise-grade higher education platform engineered with Django 4.2, Firestore/PostgreSQL dual persistence, browser-based biometric Face ID authentication, and Anthropic Claude RAG integration.
 
-### 1. Setup Environment
+---
+
+## The 7 Core Modules
+
+1. **Career — What to Study**: Standardized RIASEC Holland Code psychometric assessment matching 5+ career archetypes with salary benchmarks (USD & INR) and course roadmaps.
+2. **Universities — Where to Study**: 1,000+ curated and College Scorecard institutions with side-by-side comparison matrices across rankings, fees, and acceptance rates.
+3. **Admission — Can I Get In?**: ML scoring model with SHAP factor importance decomposition classifying targets into Safe, Target, and Reach tiers.
+4. **Finance — Can I Afford It?**: 10-year break-even ROI engine with 3-scenario sensitivity testing, Section 80E tax optimization, and 6+ partner education lenders.
+5. **Applications — How Do I Apply?**: University milestone checklists, deadline tracking, and AI Statement of Purpose (SOP) analysis with faculty alignment and passive voice detection.
+6. **AI Advisor — What Should I Do Next?**: Context-aware RAG orchestrator utilizing official student visa guidelines, scholarship rules, and student profiles.
+7. **Journey — Track My Progress**: 8-stage interactive roadmap tracking milestones from initial career discovery to consular visa interview and departure.
+
+---
+
+## Biometric Face ID Authentication
+
+StudyBridge features privacy-first, browser-based facial recognition powered by `face-api.js` (TensorFlow.js):
+- **Local Landmark Extraction**: Computes 128-dimensional facial embedding vectors entirely in the browser.
+- **Liveness Verification**: Live webcam challenge prevents photo/screen spoofing.
+- **Euclidean Verification**: Server verifies vector distance ($\le 0.55$) for fast login.
+- **Privacy Compliance**: Enrolled biometric vectors can be completely purged at any time from user settings (GDPR/DPDP compliance).
+
+---
+
+## Architecture & Data Strategy
+
+```text
+StudyBridge Architecture
+├── Presentation Layer: Tailwind CSS + Alpine.js + FontAwesome (Minimalist Modern SaaS)
+├── Biometric Engine: face-api.js (Local 128-D Embedding Extraction)
+├── API Gateway: Django 4.2 REST Views & Role-Based Access Control (RBAC)
+├── Data Provider Mesh:
+│   ├── Curated Global Institutions Provider
+│   └── US Department of Education College Scorecard Provider
+├── AI & Analytics Services:
+│   ├── Scikit-Learn Admission Scoring & SHAP Explainer
+│   ├── RIASEC Psychometric Scorer
+│   ├── Advanced Multi-Category ROI Engine
+│   └── Context-Aware RAG Advisor (Anthropic Claude)
+└── Storage Mesh: Firebase Firestore + SQLite / PostgreSQL Dual Persistence
+```
+
+---
+
+## Quick Start (Development & Demo Mode)
+
+StudyBridge runs in **Zero-Config Demo Mode** out of the box using a built-in SQLite engine, enabling all AI tools, predictors, and assessments immediately.
+
+### 1. Setup Virtual Environment
 ```bash
-cd studybridge_project
+cd backend
 python -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
+venv\Scripts\activate      # Linux/macOS: source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-# Edit .env with your keys
 ```
 
-### 2. Firebase Setup
-1. Go to https://console.firebase.google.com → create project
-2. Project Settings → Service Accounts → Generate new private key
-3. Save JSON as `firebase_credentials.json` in project root
-4. Enable Firestore Database
-5. Set `FIREBASE_PROJECT_ID` in `.env`
-
-### 3. Anthropic Claude API
-- Visit https://console.anthropic.com
-- Create API key → set `ANTHROPIC_API_KEY` in `.env`
-
-### 4. Run
+### 2. Run Database Migrations & Tests
 ```bash
-python manage.py collectstatic --noinput
+python manage.py test core.tests
 python manage.py runserver
 ```
-Open http://127.0.0.1:8000
+Navigate to `http://127.0.0.1:8000` in your web browser.
 
-## 🤖 AI Features
-- **AI Chatbot** — Claude-powered 24/7 study advisor
-- **Career Navigator** — University & course recommendations
-- **Admission Predictor** — ML scoring algorithm
-- **ROI Calculator** — Financial modeling with Chart.js
-- **Loan Estimator** — Dynamic eligibility from 6+ lenders
+---
 
-## 🔥 Firebase Collections
-- `users` — Student profiles & gamification
-- `assessments` — Career navigator results
-- `loan_applications` — Multi-step loan forms
-- `chat_history` — AI conversation logs
+## Production Deployment (Docker & CI/CD)
 
-## 🌐 Demo Mode
-Without Firebase credentials the app runs in **Demo Mode** with in-memory storage. All AI tools work normally — just configure Firebase for persistence.
+Deploy using the provided multi-stage `Dockerfile` and `docker-compose.yml`:
+```bash
+docker-compose up --build -d
+```
 
-## 📦 Stack
-Django 4.2 · Firebase Firestore · Anthropic Claude · Tailwind CSS · Alpine.js · Chart.js
+### Environment Variables
+| Variable | Description | Default |
+|---|---|---|
+| `SECRET_KEY` | Django cryptographic secret | Required in Prod |
+| `DEBUG` | Enable debug mode | `False` |
+| `DATABASE_URL` | PostgreSQL connection string | SQLite fallback |
+| `REDIS_URL` | Redis caching & queue endpoint | `redis://redis:6379/0` |
+| `ANTHROPIC_API_KEY` | Anthropic Claude API Key | Built-in offline fallback |
+| `COLLEGE_SCORECARD_API_KEY` | US Dept of Ed API Key | Curated fallback |
+| `FACE_RECOGNITION_THRESHOLD`| Biometric match confidence | `0.85` |
+
+---
+
+## License & Compliance
+Built for global higher education excellence. Adheres to GDPR/DPDP biometric privacy guidelines.

@@ -1,16 +1,64 @@
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*$py.class
+*.pyc
+
+# Virtual environments
 venv/
 .venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables & secrets
 .env
-firebase_credentials.json
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+secrets/
+
+# Firebase & cloud credentials
+firebase_credentials*.json
+*credentials*.json
+serviceAccountKey*.json
+!firebase_credentials_template.json
+
+# SQLite & databases
 *.sqlite3
-/staticfiles/
-/media/
+*.sqlite3-journal
+*.db
+db.sqlite3
+
+# Sessions & runtime cache
 .sessions/
+backend/.sessions/
+*.log
+*.pid
+
+# Django static and media files
+/staticfiles/
+staticfiles/
+/media/
+media/
+
+# Operating System & IDE
 .DS_Store
 Thumbs.db
-firebase_credentials_template.json
+ehthumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# JSON files exception rules
 *.json
 !vercel.json
 !firebase_credentials_template.json
+!package.json
+!package-lock.json

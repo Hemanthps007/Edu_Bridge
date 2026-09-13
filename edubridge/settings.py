@@ -68,21 +68,40 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'edubridge.wsgi.application'
 
-# Dual database configuration: SQLite for local/demo/tests, PostgreSQL when DATABASE_URL provided
-if os.getenv('DATABASE_URL'):
-    # In production PostgreSQL
-    import urllib.parse as urlparse
-    url = urlparse.urlparse(os.environ['DATABASE_URL'])
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': url.path[1:],
-            'USER': url.username,
-            'PASSWORD': url.password,
-            'HOST': url.hostname,
-            'PORT': url.port or 5432,
+# Supabase Configuration
+SUPABASE_URL = os.getenv('SUPABASE_URL', '')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY') or os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('SUPABASE_ANON_KEY', '')
+
+# Dual database configuration: SQLite for local/demo/tests, Supabase PostgreSQL when SUPABASE_DB_URL or DATABASE_URL provided
+db_url = os.getenv('SUPABASE_DB_URL') or os.getenv('DATABASE_URL')
+if db_url:
+    try:
+        import importlib
+        dj_db_url = importlib.import_module("dj_database_url")
+        DATABASES = {
+            'default': dj_db_url.parse(
+                db_url,
+                conn_max_age=600,
+                conn_health_checks=True,
+                ssl_require=True
+            )
         }
-    }
+    except Exception:
+        import urllib.parse as urlparse
+        url = urlparse.urlparse(db_url)
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': url.path[1:] if url.path else 'postgres',
+                'USER': url.username or 'postgres',
+                'PASSWORD': url.password or '',
+                'HOST': url.hostname,
+                'PORT': url.port or 5432,
+                'OPTIONS': {
+                    'sslmode': 'require',
+                }
+            }
+        }
 else:
     DATABASES = {
         'default': {

@@ -2,14 +2,11 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Auth & Biometrics
+    # Auth
     path('',                               views.landing,                     name='landing'),
     path('register/',                      views.register_view,               name='register'),
     path('login/',                         views.login_view,                  name='login'),
     path('logout/',                        views.logout_view,                 name='logout'),
-    path('verify-face/',                   views.verify_face_auth,            name='verify_face'),
-    path('enroll-face/',                   views.enroll_face_auth,            name='enroll_face'),
-    path('delete-face/',                   views.delete_face_auth,            name='delete_face'),
 
     # Student Journey & Onboarding
     path('dashboard/',                     views.dashboard,                   name='dashboard'),

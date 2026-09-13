@@ -133,21 +133,8 @@ SCHEMAS = {
     }
 }
 
-import sqlite3
 import json
-from contextlib import contextmanager
-
-@contextmanager
-def get_db_conn():
-    if os.environ.get('VERCEL') == '1':
-        db_path = '/tmp/db.sqlite3'
-    else:
-        db_path = os.path.join(settings.BASE_DIR, 'db.sqlite3')
-    conn = sqlite3.connect(db_path)
-    try:
-        yield conn
-    finally:
-        conn.close()
+from django.db import connection
 
 def get_schema(collection):
     if collection in SCHEMAS:
@@ -159,22 +146,25 @@ def get_schema(collection):
         ]
     }
 
-def init_sqlite():
-    with get_db_conn() as conn:
-        cursor = conn.cursor()
-        for collection, schema in SCHEMAS.items():
-            cols_def = ", ".join(f"{name} {col_type}" for name, col_type in schema['columns'])
-            cursor.execute(f"CREATE TABLE IF NOT EXISTS {collection} ({cols_def})")
-        conn.commit()
-    print("[EduBridge] (OK) SQLite fallback database initialized")
+def init_database():
+    try:
+        with connection.cursor() as cursor:
+            for collection, schema in SCHEMAS.items():
+                cols_def = ", ".join(f"{name} {col_type}" for name, col_type in schema['columns'])
+                cursor.execute(f"CREATE TABLE IF NOT EXISTS {collection} ({cols_def})")
+        db_type = "Supabase / PostgreSQL" if connection.vendor == 'postgresql' else "SQLite fallback"
+        print(f"[EduBridge] (OK) {db_type} database initialized")
+    except Exception as e:
+        print(f"[EduBridge] Database initialization error: {e}")
 
 def init_firebase():
     global _db, _demo_mode
     creds_path = os.path.join(settings.BASE_DIR, settings.FIREBASE_CREDENTIALS_PATH)
     if not os.path.exists(creds_path) or not settings.FIREBASE_PROJECT_ID:
-        print("[EduBridge] (!!) Firebase credentials not found — running in DEMO MODE")
+        db_label = "Supabase / PostgreSQL" if connection.vendor == 'postgresql' else "local database"
+        print(f"[EduBridge] (!!) Firebase credentials not found — running with {db_label}")
         _demo_mode = True
-        init_sqlite()
+        init_database()
         return
     try:
         import firebase_admin
@@ -185,9 +175,9 @@ def init_firebase():
         _db = firestore.client()
         print("[EduBridge] (OK) Firebase Firestore connected")
     except Exception as e:
-        print(f"[EduBridge] (!!) Firebase init failed ({e}) — DEMO MODE")
+        print(f"[EduBridge] (!!) Firebase init failed ({e}) — fallback database mode")
         _demo_mode = True
-        init_sqlite()
+        init_database()
 
 
 def _now():
@@ -204,8 +194,7 @@ def set_doc(collection, doc_id, data):
     data['_updated'] = _now()
     if _demo_mode:
         try:
-            with get_db_conn() as conn:
-                cursor = conn.cursor()
+            with connection.cursor() as cursor:
                 schema = get_schema(collection)
                 
                 # Ensure the table exists
@@ -213,7 +202,7 @@ def set_doc(collection, doc_id, data):
                 cursor.execute(f"CREATE TABLE IF NOT EXISTS {collection} ({cols_def})")
                 
                 # Fetch existing data for merge
-                cursor.execute(f"SELECT json_data FROM {collection} WHERE id = ?", (doc_id,))
+                cursor.execute(f"SELECT json_data FROM {collection} WHERE id = %s", (doc_id,))
                 row = cursor.fetchone()
                 existing_data = {}
                 if row:
@@ -227,7 +216,7 @@ def set_doc(collection, doc_id, data):
                 values = []
                 for name, _ in schema['columns']:
                     cols.append(name)
-                    placeholders.append("?")
+                    placeholders.append("%s")
                     if name == 'json_data':
                         values.append(json.dumps(merged_data))
                     else:
@@ -236,12 +225,17 @@ def set_doc(collection, doc_id, data):
                             val = doc_id
                         values.append(val)
                 
-                sql = f"INSERT OR REPLACE INTO {collection} ({', '.join(cols)}) VALUES ({', '.join(placeholders)})"
+                if connection.vendor == 'postgresql':
+                    update_cols = [c for c in cols if c != 'id']
+                    update_clause = ", ".join(f"{c} = EXCLUDED.{c}" for c in update_cols)
+                    sql = f"INSERT INTO {collection} ({', '.join(cols)}) VALUES ({', '.join(placeholders)}) ON CONFLICT (id) DO UPDATE SET {update_clause}"
+                else:
+                    sql = f"INSERT OR REPLACE INTO {collection} ({', '.join(cols)}) VALUES ({', '.join(placeholders)})"
+                
                 cursor.execute(sql, values)
-                conn.commit()
             return True
         except Exception as e:
-            print(f"SQLite set_doc error for collection {collection}: {e}")
+            print(f"Database set_doc error for collection {collection}: {e}")
             return False
     try:
         _db.collection(collection).document(doc_id).set(data, merge=True)
@@ -254,15 +248,15 @@ def set_doc(collection, doc_id, data):
 def get_doc(collection, doc_id):
     if _demo_mode:
         try:
-            with get_db_conn() as conn:
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT json_data FROM {collection} WHERE id = ?", (doc_id,))
+            with connection.cursor() as cursor:
+                schema = get_schema(collection)
+                cols_def = ", ".join(f"{name} {col_type}" for name, col_type in schema['columns'])
+                cursor.execute(f"CREATE TABLE IF NOT EXISTS {collection} ({cols_def})")
+
+                cursor.execute(f"SELECT json_data FROM {collection} WHERE id = %s", (doc_id,))
                 row = cursor.fetchone()
                 return json.loads(row[0]) if row else None
-        except sqlite3.OperationalError:
-            return None
-        except Exception as e:
-            print(f"SQLite get_doc error for collection {collection}: {e}")
+        except Exception:
             return None
     try:
         doc = _db.collection(collection).document(doc_id).get()
@@ -283,8 +277,11 @@ def add_doc(collection, data):
 def query_docs(collection, field, op, value, limit=30):
     if _demo_mode:
         try:
-            with get_db_conn() as conn:
-                cursor = conn.cursor()
+            with connection.cursor() as cursor:
+                schema = get_schema(collection)
+                cols_def = ", ".join(f"{name} {col_type}" for name, col_type in schema['columns'])
+                cursor.execute(f"CREATE TABLE IF NOT EXISTS {collection} ({cols_def})")
+
                 cursor.execute(f"SELECT json_data FROM {collection}")
                 rows = cursor.fetchall()
             
@@ -305,10 +302,7 @@ def query_docs(collection, field, op, value, limit=30):
                 items = [i for i in items if i.get(field) != value]
                 
             return items[:limit]
-        except sqlite3.OperationalError:
-            return []
-        except Exception as e:
-            print(f"SQLite query_docs error for collection {collection}: {e}")
+        except Exception:
             return []
     try:
         from google.cloud.firestore_v1.base_query import FieldFilter
@@ -324,9 +318,12 @@ def query_docs(collection, field, op, value, limit=30):
 def get_all_docs(collection, limit=100):
     if _demo_mode:
         try:
-            with get_db_conn() as conn:
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT json_data FROM {collection} LIMIT ?", (limit,))
+            with connection.cursor() as cursor:
+                schema = get_schema(collection)
+                cols_def = ", ".join(f"{name} {col_type}" for name, col_type in schema['columns'])
+                cursor.execute(f"CREATE TABLE IF NOT EXISTS {collection} ({cols_def})")
+
+                cursor.execute(f"SELECT json_data FROM {collection} LIMIT %s", (limit,))
                 rows = cursor.fetchall()
             return [json.loads(r[0]) for r in rows]
         except Exception:
@@ -342,13 +339,14 @@ def get_all_docs(collection, limit=100):
 def delete_doc(collection, doc_id):
     if _demo_mode:
         try:
-            with get_db_conn() as conn:
-                cursor = conn.cursor()
-                cursor.execute(f"DELETE FROM {collection} WHERE id = ?", (doc_id,))
-                conn.commit()
+            with connection.cursor() as cursor:
+                schema = get_schema(collection)
+                cols_def = ", ".join(f"{name} {col_type}" for name, col_type in schema['columns'])
+                cursor.execute(f"CREATE TABLE IF NOT EXISTS {collection} ({cols_def})")
+
+                cursor.execute(f"DELETE FROM {collection} WHERE id = %s", (doc_id,))
             return True
-        except Exception as e:
-            print(f"SQLite delete_doc error: {e}")
+        except Exception:
             return False
     try:
         _db.collection(collection).document(doc_id).delete()

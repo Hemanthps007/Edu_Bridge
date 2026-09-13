@@ -6,7 +6,6 @@ from utils.career_matcher import score_riasec
 from utils.roi_engine import calculate_advanced_roi
 from services.data_providers.curated import CuratedDataProvider
 from services.ai_document_analyzer import analyze_sop_content
-from core.views import _calculate_vector_distance
 
 class AdmissionPredictorTests(TestCase):
     def test_predictor_outputs_and_boundaries(self):
@@ -148,19 +147,6 @@ class DocumentAnalyzerTests(TestCase):
         self.assertIn('suggestions', res)
 
 
-class BiometricFaceDistanceTests(TestCase):
-    def test_vector_distance_identical(self):
-        vec = [0.1] * 128
-        dist = _calculate_vector_distance(vec, vec)
-        self.assertAlmostEqual(dist, 0.0)
-
-    def test_vector_distance_different(self):
-        vec1 = [0.1] * 128
-        vec2 = [0.9] * 128
-        dist = _calculate_vector_distance(vec1, vec2)
-        self.assertGreater(dist, 0.55)
-
-
 class TemplateRenderingRegressionTests(TestCase):
     def setUp(self):
         from django.test import RequestFactory
@@ -215,4 +201,30 @@ class TemplateRenderingRegressionTests(TestCase):
         self.assertEqual(response.status_code, 200)
         content = response.content.decode('utf-8')
         self.assertIn('Study Abroad Journey', content)
+
+
+class SupabaseAndDatabaseTests(TestCase):
+    def test_supabase_client_unconfigured_safe_fallback(self):
+        from core.supabase_client import get_supabase_client
+        client = get_supabase_client()
+        self.assertIsNone(client)
+
+    def test_database_crud_operations(self):
+        from core import firebase_client as fb
+        test_uid = 'test_user_supabase_validation'
+        test_data = {'name': 'Supabase Test', 'email': 'supabase@example.com', 'country_goal': 'Canada'}
+        saved = fb.set_doc('users', test_uid, test_data)
+        self.assertTrue(saved)
+
+        doc = fb.get_doc('users', test_uid)
+        self.assertIsNotNone(doc)
+        self.assertEqual(doc.get('email'), 'supabase@example.com')
+
+        matches = fb.query_docs('users', 'email', '==', 'supabase@example.com')
+        self.assertGreaterEqual(len(matches), 1)
+
+        deleted = fb.delete_doc('users', test_uid)
+        self.assertTrue(deleted)
+        self.assertIsNone(fb.get_doc('users', test_uid))
+
 

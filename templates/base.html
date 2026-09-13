@@ -12,7 +12,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
 <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"/>
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 
@@ -116,7 +115,7 @@
             <div class="text-xs text-slate-500 truncate">{{ current_user.email }}</div>
           </div>
           <a href="{% url 'profile' %}" class="flex items-center gap-2.5 px-3.5 py-2 text-slate-700 hover:bg-slate-50 transition">
-            <i class="fa-regular fa-user text-slate-400"></i> Account &amp; Face ID
+            <i class="fa-regular fa-user text-slate-400"></i> Account
           </a>
           <a href="{% url 'my_journey' %}" class="flex items-center gap-2.5 px-3.5 py-2 text-slate-700 hover:bg-slate-50 transition">
             <i class="fa-solid fa-route text-slate-400"></i> My Journey
@@ -237,7 +236,7 @@
     <div class="border-t border-slate-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
       <p>&copy; 2026 EduBridge Inc. Built for global academic excellence.</p>
       <div class="flex items-center gap-3">
-        <span class="badge badge-slate"><i class="fa-solid fa-lock text-[10px]"></i> Client Biometric Auth</span>
+        <span class="badge badge-slate"><i class="fa-solid fa-lock text-[10px]"></i> Enterprise Security</span>
         <span class="badge badge-blue"><i class="fa-solid fa-microchip text-[10px]"></i> ML Scoring Engine</span>
         <span class="badge badge-green"><i class="fa-solid fa-server text-[10px]"></i> Cloud Data Mesh</span>
       </div>
@@ -246,7 +245,6 @@
 </footer>
 
 <script src="{% static 'js/app.js' %}"></script>
-<script src="{% static 'js/face-auth.js' %}"></script>
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>

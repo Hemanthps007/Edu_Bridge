@@ -40,15 +40,8 @@ def login_required(fn):
     wrapper.__name__ = fn.__name__
     return wrapper
 
-def _calculate_vector_distance(vec1, vec2):
-    """Calculates Euclidean distance between two face descriptor vectors."""
-    if not vec1 or not vec2 or len(vec1) != len(vec2):
-        return 1.0
-    sq_sum = sum((a - b) ** 2 for a, b in zip(vec1, vec2))
-    return math.sqrt(sq_sum)
 
-
-# ── Authentication & Biometrics ──────────────────────────────────────────────
+# ── Authentication ───────────────────────────────────────────────────────────
 
 def landing(request):
     if request.session.get('user'):
@@ -150,97 +143,6 @@ def logout_view(request):
     return redirect('landing')
 
 
-@csrf_exempt
-def verify_face_auth(request):
-    """Verifies captured browser face descriptor against enrolled biometric signature."""
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
-    try:
-        data = json.loads(request.body)
-        email = data.get('email', '').strip().lower()
-        descriptor = data.get('descriptor')
-
-        if not email or not descriptor:
-            return JsonResponse({'success': False, 'error': 'Email and biometric descriptor are required.'}, status=400)
-
-        uid = hashlib.md5(email.encode()).hexdigest()
-        profile = fb.get_user_profile(uid)
-        if not profile:
-            return JsonResponse({'success': False, 'error': 'No account associated with this email address.'}, status=404)
-
-        cred = fb.get_face_credential(uid)
-        if not cred or not cred.get('descriptors'):
-            return JsonResponse({'success': False, 'error': 'Face ID is not enrolled for this account. Please sign in with password first.'}, status=400)
-
-        stored_descriptor = cred.get('descriptors')
-        distance = _calculate_vector_distance(descriptor, stored_descriptor)
-        confidence = max(0.0, min(100.0, (1.0 - (distance / 0.65)) * 100.0))
-
-        # Strict match threshold: distance <= 0.55
-        if distance <= 0.55 or confidence >= 80.0:
-            request.session['user'] = {
-                'uid': uid,
-                'name': profile.get('name', email),
-                'email': email,
-                'role': profile.get('role', 'student')
-            }
-            ip_address = request.META.get('REMOTE_ADDR', '')
-            user_agent = request.META.get('HTTP_USER_AGENT', '')
-            fb.log_user_login(uid, email, ip_address, user_agent)
-            return JsonResponse({
-                'success': True,
-                'confidence': round(confidence, 1),
-                'redirect': '/dashboard/'
-            })
-        else:
-            return JsonResponse({
-                'success': False,
-                'error': f'Biometric face verification failed (confidence {confidence:.1f}%). Please use password.'
-            }, status=401)
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
-
-@login_required
-@csrf_exempt
-def enroll_face_auth(request):
-    """Enrolls or updates webcam face recognition descriptor."""
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
-    try:
-        data = json.loads(request.body)
-        descriptor = data.get('descriptor')
-        if not descriptor or len(descriptor) != 128:
-            return JsonResponse({'success': False, 'error': 'Invalid 128-dimensional face descriptor.'}, status=400)
-
-        uid = request.session['user']['uid']
-        fb.save_face_credential(uid, descriptor)
-        profile = fb.get_user_profile(uid) or {}
-        profile['face_auth_enabled'] = True
-        profile = award_xp(profile, 'face_auth', 150, 'biometric_secured')
-        fb.save_user_profile(uid, profile)
-
-        fb.add_notification(uid, "Face ID Enrolled", "Browser biometric login is now enabled for your account.", "success", "/profile/")
-        return JsonResponse({'success': True, 'message': 'Face biometric profile securely enrolled! +150 XP'})
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
-
-@login_required
-@csrf_exempt
-def delete_face_auth(request):
-    """GDPR-compliant removal of face biometric descriptor data."""
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
-    uid = request.session['user']['uid']
-    fb.delete_face_credential(uid)
-    profile = fb.get_user_profile(uid) or {}
-    profile['face_auth_enabled'] = False
-    fb.save_user_profile(uid, profile)
-    messages.info(request, 'Your biometric face data has been completely erased.')
-    return JsonResponse({'success': True})
-
-
 # ── Core Dashboard & Onboarding ───────────────────────────────────────────────
 
 @login_required
@@ -336,7 +238,6 @@ def calculate_profile_score_api(request):
 def profile_view(request):
     uid = request.session['user']['uid']
     profile = fb.get_user_profile(uid) or {}
-    face_cred = fb.get_face_credential(uid)
     gamification = calculate_gamification_state(profile)
     scores = calculate_profile_scores(profile)
 
@@ -366,7 +267,6 @@ def profile_view(request):
     logins.sort(key=lambda x: x.get('login_time', ''), reverse=True)
     return render(request, 'profile.html', {
         'profile': profile,
-        'face_cred': face_cred,
         'gamification': gamification,
         'scores': scores,
         'logins': logins

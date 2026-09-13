@@ -1,15 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}ML Admission Predictor{% endblock %}
 {% block content %}
-<div class="max-w-5xl mx-auto px-4 py-8 space-y-8" x-data="{
-    gre: {{ form_data.gre|default:form_defaults.gre }},
-    gpa: {{ form_data.gpa|default:form_defaults.gpa }},
-    ielts: {{ form_data.ielts|default:form_defaults.ielts }},
-    work_exp: {{ form_data.work_exp|default:form_defaults.work_exp }},
-    research: {{ form_data.research|default:form_defaults.research }},
-    internships: {{ form_data.internships|default:form_defaults.internships }},
-    target_rank: {{ form_data.target_rank|default:form_defaults.target_rank }}
-}">
+<div class="max-w-5xl mx-auto px-4 py-8 space-y-8" x-data="{ gre: Number('{{ form_data.gre|default:form_defaults.gre }}'), gpa: Number('{{ form_data.gpa|default:form_defaults.gpa }}'), ielts: Number('{{ form_data.ielts|default:form_defaults.ielts }}'), work_exp: Number('{{ form_data.work_exp|default:form_defaults.work_exp }}'), research: Number('{{ form_data.research|default:form_defaults.research }}'), internships: Number('{{ form_data.internships|default:form_defaults.internships }}'), target_rank: Number('{{ form_data.target_rank|default:form_defaults.target_rank }}') }">
 
   <!-- Header -->
   <div class="pb-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -125,7 +117,8 @@
         <!-- Progress Bar -->
         <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mb-6">
           <div class="h-2.5 rounded-full transition-all duration-700 {% if result.category == 'Safe' %}bg-emerald-500{% elif result.category == 'Target' %}bg-amber-500{% else %}bg-rose-500{% endif %}"
-               style="width: {{ result.probability }}%;"></div>
+               data-progress="{{ result.probability }}"
+               :style="'width: {{ result.probability }}%'"></div>
         </div>
 
         <!-- SHAP Factor Breakdown -->
@@ -135,13 +128,13 @@
             {% for item in result.factor_breakdown %}
             <div class="p-2 rounded-lg bg-slate-50 flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full {% if item.impact > 0 %}bg-emerald-500{% else %}bg-rose-500{% endif %}"></span>
+                <span class="w-2 h-2 rounded-full {% if item.status == 'positive' %}bg-emerald-500{% else %}bg-rose-500{% endif %}"></span>
                 <span class="font-medium text-slate-700">{{ item.factor }}</span>
               </div>
               <div class="flex items-center gap-2 font-mono text-[11px]">
                 <span class="text-slate-400">({{ item.value }})</span>
-                <span class="font-bold {% if item.impact > 0 %}text-emerald-700{% else %}text-rose-700{% endif %}">
-                  {% if item.impact > 0 %}+{% endif %}{{ item.impact }}
+                <span class="font-bold {% if item.status == 'positive' %}text-emerald-700{% else %}text-rose-700{% endif %}">
+                  {% if item.status == 'positive' %}+{% endif %}{{ item.impact }}
                 </span>
               </div>
             </div>

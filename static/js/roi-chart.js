@@ -3,6 +3,18 @@ function initRoiChart(earningsData, costsData) {
   const ctx = document.getElementById('roiChart');
   if (!ctx || typeof Chart === 'undefined') return;
 
+  let earnings = earningsData;
+  let costs = costsData;
+
+  if (!earnings && ctx.dataset.earnings) {
+    try { earnings = JSON.parse(ctx.dataset.earnings); } catch (e) { earnings = []; }
+  }
+  if (!costs && ctx.dataset.costs) {
+    try { costs = JSON.parse(ctx.dataset.costs); } catch (e) { costs = []; }
+  }
+
+  if (!earnings || !costs || !earnings.length) return;
+
   new Chart(ctx, {
     type: 'line',
     data: {
@@ -10,7 +22,7 @@ function initRoiChart(earningsData, costsData) {
       datasets: [
         {
           label: 'Cumulative Net Savings (₹ Lakhs)',
-          data: earningsData,
+          data: earnings,
           borderColor: '#0284C7',
           backgroundColor: 'rgba(2, 132, 199, 0.08)',
           fill: true,
@@ -18,7 +30,7 @@ function initRoiChart(earningsData, costsData) {
         },
         {
           label: 'Total Upfront Investment (₹ Lakhs)',
-          data: costsData,
+          data: costs,
           borderColor: '#E11D48',
           borderDash: [5, 5],
           fill: false,
@@ -39,3 +51,8 @@ function initRoiChart(earningsData, costsData) {
     }
   });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  initRoiChart();
+});
+

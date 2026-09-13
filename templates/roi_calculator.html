@@ -158,7 +158,9 @@
           10-Year Cumulative Wealth Trajectory (₹ Lakhs)
         </div>
         <div class="h-64">
-          <canvas id="roiChart"></canvas>
+          <canvas id="roiChart"
+                  data-earnings='{{ res.chart_data.earnings|default:"[]"|safe }}'
+                  data-costs='{{ res.chart_data.costs|default:"[]"|safe }}'></canvas>
         </div>
       </div>
     </div>
@@ -167,11 +169,4 @@
 </div>
 
 <script src="{% static 'js/roi-chart.js' %}"></script>
-{% if res.chart_data %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  initRoiChart({{ res.chart_data.earnings|safe }}, {{ res.chart_data.costs|safe }});
-});
-</script>
-{% endif %}
 {% endblock %}

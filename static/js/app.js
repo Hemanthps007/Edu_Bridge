@@ -39,6 +39,14 @@ document.addEventListener('DOMContentLoaded', function() {
     AOS.init({ duration: 600, once: true, offset: 30 });
   }
 
+  // Dynamic Progress Bars (reads data-progress="XX")
+  document.querySelectorAll('[data-progress]').forEach(el => {
+    const val = el.getAttribute('data-progress');
+    if (val !== null && val !== '') {
+      el.style.width = val + '%';
+    }
+  });
+
   // Console Brand Banner
   console.log('%c🎓 EduBridge — AI Higher-Education Platform', 'color:#0284C7;font-size:16px;font-weight:bold;');
 });

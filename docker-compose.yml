@@ -5,12 +5,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: gunicorn studybridge.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    command: gunicorn edubridge.wsgi:application --bind 0.0.0.0:8000 --workers 3
     ports:
       - "8000:8000"
     environment:
       - DEBUG=False
-      - DATABASE_URL=postgres://studybridge_user:studybridge_secure_pass@db:5432/studybridge_prod
+      - DATABASE_URL=postgres://edubridge_user:edubridge_secure_pass@db:5432/edubridge_prod
       - REDIS_URL=redis://redis:6379/0
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - FACE_RECOGNITION_THRESHOLD=0.85
@@ -22,9 +22,9 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: studybridge_prod
-      POSTGRES_USER: studybridge_user
-      POSTGRES_PASSWORD: studybridge_secure_pass
+      POSTGRES_DB: edubridge_prod
+      POSTGRES_USER: edubridge_user
+      POSTGRES_PASSWORD: edubridge_secure_pass
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:

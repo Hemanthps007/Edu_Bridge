@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Student Dashboard{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+  <!-- Welcome Banner -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Student Portal</span>
+        <span class="badge badge-slate">Level {{ gamification.level }} &bull; {{ gamification.xp }} XP</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+        Good day, {{ profile.name|default:current_user.name }}
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1">
+        {{ profile.country_goal|default:"USA" }} &bull; {{ profile.target_program|default:"MS Computer Science" }} &bull; Class of 2027
+      </p>
+    </div>
+
+    <!-- Quick Stats Pill -->
+    <div class="flex items-center gap-3">
+      <div class="glass px-3.5 py-2 rounded-xl flex items-center gap-3 text-xs">
+        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-fire"></i>
+        </div>
+        <div>
+          <div class="font-bold text-slate-900">{{ profile.streak|default:1 }} Day Streak</div>
+          <div class="text-slate-400 text-[11px]">Consistent Prep</div>
+        </div>
+      </div>
+      <div class="glass px-3.5 py-2 rounded-xl flex items-center gap-3 text-xs">
+        <div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div>
+          <div class="font-bold text-slate-900">{% if profile.face_auth_enabled %}Face ID Active{% else %}Face ID Inactive{% endif %}</div>
+          <div class="text-slate-400 text-[11px]"><a href="{% url 'profile' %}" class="text-sky-600 hover:underline">Manage</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Study Abroad Journey Progress Bar -->
+  <div class="glass rounded-2xl p-6 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-route text-slate-500"></i>
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Study Abroad Journey</h2>
+      </div>
+      <span class="badge badge-blue font-semibold">{{ progress_pct }}% Complete</span>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mb-6">
+      <div class="bg-slate-900 h-2 rounded-full transition-all duration-500" :style="'width: {{ progress_pct|default:0 }}%'" data-progress="{{ progress_pct|default:0 }}"></div>
+    </div>
+
+    <!-- 7 Stages Horizontal Flow -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+      {% for stage in stages %}
+      <div class="text-center p-2.5 rounded-xl border transition {% if stage_idx > forloop.counter0 %}bg-emerald-50/50 border-emerald-200 text-emerald-700{% elif stage.id == current_stage %}bg-sky-50 border-sky-300 text-sky-800 shadow-sm{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">
+        <div class="w-7 h-7 rounded-lg mx-auto flex items-center justify-center text-xs mb-1.5 {% if stage_idx > forloop.counter0 %}bg-emerald-100 text-emerald-800{% elif stage.id == current_stage %}bg-sky-600 text-white{% else %}bg-slate-200 text-slate-500{% endif %}">
+          <i class="fa-solid {{ stage.icon }}"></i>
+        </div>
+        <div class="text-[11px] font-bold truncate">{{ stage.label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- 4 Core Profile Strength Scores -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Academic Strength -->
+    <div class="glass rounded-xl p-5 border border-slate-200">
+      <div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+        <span>Academic Strength</span>
+        <i class="fa-solid fa-graduation-cap text-sky-600"></i>
+      </div>
+      <div class="flex items-baseline gap-1.5 mb-2">
+        <span class="text-2xl font-black text-slate-900">{{ scores.academic_strength }}%</span>
+        <span class="text-xs text-slate-400">Competitive</span>
+      </div>
+      <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+        <div class="bg-sky-600 h-1.5 rounded-full" :style="'width: {{ scores.academic_strength|default:0 }}%'" data-progress="{{ scores.academic_strength|default:0 }}"></div>
+      </div>
+    </div>
+
+    <!-- Financial Readiness -->
+    <div class="glass rounded-xl p-5 border border-slate-200">
+      <div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+        <span>Financial Readiness</span>
+        <i class="fa-solid fa-wallet text-emerald-600"></i>
+      </div>
+      <div class="flex items-baseline gap-1.5 mb-2">
+        <span class="text-2xl font-black text-slate-900">{{ scores.financial_readiness }}%</span>
+        <span class="text-xs text-slate-400">Budget Indexed</span>
+      </div>
+      <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+        <div class="bg-emerald-600 h-1.5 rounded-full" :style="'width: {{ scores.financial_readiness|default:0 }}%'" data-progress="{{ scores.financial_readiness|default:0 }}"></div>
+      </div>
+    </div>
+
+    <!-- Career Clarity -->
+    <div class="glass rounded-xl p-5 border border-slate-200">
+      <div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+        <span>Career Clarity</span>
+        <i class="fa-solid fa-compass text-amber-600"></i>
+      </div>
+      <div class="flex items-baseline gap-1.5 mb-2">
+        <span class="text-2xl font-black text-slate-900">{{ scores.career_clarity }}%</span>
+        <span class="text-xs text-slate-400">RIASEC Verified</span>
+      </div>
+      <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+        <div class="bg-amber-600 h-1.5 rounded-full" :style="'width: {{ scores.career_clarity|default:0 }}%'" data-progress="{{ scores.career_clarity|default:0 }}"></div>
+      </div>
+    </div>
+
+    <!-- Overall Admission Readiness -->
+    <div class="glass rounded-xl p-5 border border-slate-200 bg-slate-900 text-white">
+      <div class="flex items-center justify-between text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+        <span>Overall Readiness</span>
+        <i class="fa-solid fa-chart-simple text-sky-400"></i>
+      </div>
+      <div class="flex items-baseline gap-1.5 mb-2">
+        <span class="text-2xl font-black text-white">{{ scores.overall_score }}%</span>
+        <span class="text-xs text-slate-400">Target Level</span>
+      </div>
+      <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+        <div class="bg-sky-400 h-1.5 rounded-full" :style="'width: {{ scores.overall_score|default:0 }}%'" data-progress="{{ scores.overall_score|default:0 }}"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Pillars Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+    <!-- Career Navigator -->
+    <a href="{% url 'career_assessment' %}" class="glass glass-hover rounded-2xl p-5 block text-decoration-none">
+      <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center text-base mb-3">
+        <i class="fa-solid fa-compass"></i>
+      </div>
+      <h3 class="text-sm font-bold text-slate-900 mb-1">Career Navigator</h3>
+      <p class="text-xs text-slate-500 mb-4 leading-relaxed">RIASEC Holland Code psychometric assessment matching 5+ global career paths.</p>
+      <div class="text-xs font-semibold text-sky-600 flex items-center gap-1">
+        Start Assessment <i class="fa-solid fa-arrow-right text-[10px]"></i>
+      </div>
+    </a>
+
+    <!-- University Explorer -->
+    <a href="{% url 'university_search' %}" class="glass glass-hover rounded-2xl p-5 block text-decoration-none">
+      <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-base mb-3">
+        <i class="fa-solid fa-building-columns"></i>
+      </div>
+      <h3 class="text-sm font-bold text-slate-900 mb-1">Universities</h3>
+      <p class="text-xs text-slate-500 mb-4 leading-relaxed">Search 100+ top curated institutions across US, UK, Canada, Germany &amp; compare.</p>
+      <div class="text-xs font-semibold text-indigo-600 flex items-center gap-1">
+        Explore Database <i class="fa-solid fa-arrow-right text-[10px]"></i>
+      </div>
+    </a>
+
+    <!-- Admission Predictor -->
+    <a href="{% url 'admission_predictor' %}" class="glass glass-hover rounded-2xl p-5 block text-decoration-none">
+      <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-base mb-3">
+        <i class="fa-solid fa-chart-line"></i>
+      </div>
+      <h3 class="text-sm font-bold text-slate-900 mb-1">Admission Predictor</h3>
+      <p class="text-xs text-slate-500 mb-4 leading-relaxed">ML scoring algorithm classifying programs into Safe, Target, and Reach tiers.</p>
+      <div class="text-xs font-semibold text-emerald-600 flex items-center gap-1">
+        Run Simulation <i class="fa-solid fa-arrow-right text-[10px]"></i>
+      </div>
+    </a>
+
+    <!-- ROI & Loan Marketplace -->
+    <a href="{% url 'roi_calculator' %}" class="glass glass-hover rounded-2xl p-5 block text-decoration-none">
+      <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center text-base mb-3">
+        <i class="fa-solid fa-sack-dollar"></i>
+      </div>
+      <h3 class="text-sm font-bold text-slate-900 mb-1">ROI &amp; Loan Marketplace</h3>
+      <p class="text-xs text-slate-500 mb-4 leading-relaxed">10-year break-even financial model and compare loan quotes from 6+ banks.</p>
+      <div class="text-xs font-semibold text-amber-600 flex items-center gap-1">
+        Model Finances <i class="fa-solid fa-arrow-right text-[10px]"></i>
+      </div>
+    </a>
+  </div>
+
+  <!-- Applications & AI Advisor Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Active Applications Tracker Preview -->
+    <div class="lg:col-span-2 glass rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Active Applications</h3>
+          <p class="text-xs text-slate-500">Track deadlines, SOP readiness, and decisions</p>
+        </div>
+        <a href="{% url 'application_tracker' %}" class="btn-secondary text-xs py-1.5 px-3">
+          Manage All <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+        </a>
+      </div>
+
+      {% if applications %}
+      <div class="space-y-3">
+        {% for app in applications|slice:":4" %}
+        <div class="p-3.5 rounded-xl border border-slate-200 flex items-center justify-between hover:bg-slate-50 transition">
+          <div>
+            <div class="font-bold text-slate-900 text-sm">{{ app.university_name }}</div>
+            <div class="text-xs text-slate-500">{{ app.program_name }} &bull; Deadline: {{ app.deadline }}</div>
+          </div>
+          <span class="badge {% if app.status == 'admitted' %}badge-green{% elif app.status == 'submitted' %}badge-blue{% else %}badge-slate{% endif %} capitalize">
+            {{ app.status }}
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-8 text-slate-400">
+        <i class="fa-regular fa-folder-open text-2xl mb-2"></i>
+        <p class="text-xs text-slate-500">No active applications tracked yet.</p>
+        <a href="{% url 'application_tracker' %}" class="btn-primary text-xs py-2 px-3 mt-3">
+          Add Target University
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- AI Advisor Quick Prompt -->
+    <div class="glass rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+      <div>
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-sm font-bold">
+            <i class="fa-solid fa-brain"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">EduBridge AI Advisor</h3>
+        </div>
+        <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+          Ask any question about university requirements, GRE preparation, SOP critiques, or student visa guidelines.
+        </p>
+
+        <div class="space-y-2 mb-4 text-xs">
+          <a href="{% url 'chatbot' %}?q=Which+universities+fit+my+profile" class="block p-2.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition">
+            "Which universities fit my CGPA and budget?"
+          </a>
+          <a href="{% url 'chatbot' %}?q=How+to+finance+my+studies+with+Section+80E" class="block p-2.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition">
+            "How do education loan tax deductions work?"
+          </a>
+          <a href="{% url 'chatbot' %}?q=What+is+STEM+OPT+extension" class="block p-2.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition">
+            "Explain the 3-year US STEM OPT work permit."
+          </a>
+        </div>
+      </div>
+
+      <a href="{% url 'chatbot' %}" class="btn-brand w-full justify-center py-2.5 text-xs">
+        <i class="fa-regular fa-comment-dots"></i> Open Full AI Chatbot
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

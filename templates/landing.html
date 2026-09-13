@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% block title %}EduBridge — AI-Powered Higher Education Platform{% endblock %}
+{% block content %}
+
+<!-- Hero Section -->
+<section class="relative overflow-hidden pt-12 pb-20 sm:pt-20 sm:pb-28">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+
+      <!-- Left Hero Text -->
+      <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
+          <i class="fa-solid fa-graduation-cap text-sky-600"></i> End-to-End Decision &amp; Application Platform
+        </div>
+
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
+          Navigate Your Path to <span class="grad-text">Global Academic</span> Excellence
+        </h1>
+
+        <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
+          An integrated AI ecosystem for international scholars. Connect career discovery, predictive admissions, 10-year ROI modeling, and 6+ education lenders in one unified portal.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
+          <a href="{% url 'register' %}" class="btn-primary w-full sm:w-auto justify-center text-sm py-3 px-6">
+            Get Started Free <i class="fa-solid fa-arrow-right text-xs"></i>
+          </a>
+          <a href="{% url 'login' %}" class="btn-secondary w-full sm:w-auto justify-center text-sm py-3 px-6">
+            <i class="fa-solid fa-face-smile"></i> Biometric Face Sign In
+          </a>
+        </div>
+
+        <!-- Trust Stats -->
+        <div class="grid grid-cols-3 gap-6 pt-8 border-t border-slate-200 text-left">
+          <div>
+            <div class="text-2xl font-black text-slate-900">50,000+</div>
+            <div class="text-xs text-slate-500 font-medium mt-0.5">Students Guided</div>
+          </div>
+          <div>
+            <div class="text-2xl font-black text-slate-900">1,000+</div>
+            <div class="text-xs text-slate-500 font-medium mt-0.5">Institutions Indexed</div>
+          </div>
+          <div>
+            <div class="text-2xl font-black text-slate-900">₹65 Lakhs</div>
+            <div class="text-xs text-slate-500 font-medium mt-0.5">Avg Alum Starting CTC</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Dashboard Showcase Mockup -->
+      <div class="lg:col-span-5">
+        <div class="glass rounded-2xl p-6 shadow-xl border border-slate-200 space-y-4">
+          <!-- Student Card -->
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-slate-900 text-white font-bold flex items-center justify-center text-sm">
+                AK
+              </div>
+              <div>
+                <div class="font-bold text-slate-900 text-sm">Ananya Kulkarni</div>
+                <div class="text-[11px] text-slate-500">Target: Fall 2027 &bull; MS CS</div>
+              </div>
+            </div>
+            <span class="badge badge-green text-[10px]"><i class="fa-solid fa-circle-check text-[8px]"></i> Verified</span>
+          </div>
+
+          <!-- Readiness Progress Bar -->
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5">
+            <div class="flex justify-between text-xs font-semibold text-slate-700">
+              <span>Overall Admission Readiness</span>
+              <span class="text-slate-900 font-bold">82%</span>
+            </div>
+            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+              <div class="bg-slate-900 h-2 rounded-full w-[82%]"></div>
+            </div>
+          </div>
+
+          <!-- Metrics Matrix -->
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div class="p-3 rounded-xl border border-slate-200">
+              <div class="text-slate-400 text-[10px] uppercase font-bold">Predictor Category</div>
+              <div class="font-black text-emerald-700 text-sm mt-0.5">Target (68% Chance)</div>
+              <div class="text-[10px] text-slate-500 mt-1">Carnegie Mellon Univ</div>
+            </div>
+            <div class="p-3 rounded-xl border border-slate-200">
+              <div class="text-slate-400 text-[10px] uppercase font-bold">Pre-Approved Loan</div>
+              <div class="font-black text-sky-700 text-sm mt-0.5">₹45.0 Lakhs</div>
+              <div class="text-[10px] text-slate-500 mt-1">10.15% p.a. &bull; SBI</div>
+            </div>
+          </div>
+
+          <!-- Feature Snippet -->
+          <div class="p-3 rounded-xl border border-slate-200 text-xs flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+              <i class="fa-solid fa-compass"></i>
+            </div>
+            <div>
+              <div class="font-bold text-slate-900">Holland Code: IRC</div>
+              <div class="text-[11px] text-slate-500">Top Match: AI &amp; Machine Learning Engineer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- The 7 Core Modules Section -->
+<section class="py-16 bg-white border-y border-slate-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="badge badge-blue mb-2">The Complete Ecosystem</span>
+      <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">7 Modules for Confident Decisions</h2>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1">From initial career alignment to financial planning and consular visa readiness.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-xs">
+      <!-- 1. Career Navigator -->
+      <div class="glass p-6 rounded-2xl border border-slate-200 space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center text-base">
+          <i class="fa-solid fa-compass"></i>
+        </div>
+        <h3 class="font-bold text-slate-900 text-sm">1. Career — What to Study</h3>
+        <p class="text-slate-500 leading-relaxed">Standardized RIASEC Holland Code psychometric assessment matching 5+ future-proof career specializations.</p>
+      </div>
+
+      <!-- 2. Universities -->
+      <div class="glass p-6 rounded-2xl border border-slate-200 space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-base">
+          <i class="fa-solid fa-building-columns"></i>
+        </div>
+        <h3 class="font-bold text-slate-900 text-sm">2. Universities — Where to Study</h3>
+        <p class="text-slate-500 leading-relaxed">Verified directory of 1,000+ global and Indian universities with live side-by-side comparison matrices.</p>
+      </div>
+
+      <!-- 3. Admissions -->
+      <div class="glass p-6 rounded-2xl border border-slate-200 space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-base">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <h3 class="font-bold text-slate-900 text-sm">3. Admission — Can I Get In?</h3>
+        <p class="text-slate-500 leading-relaxed">ML scoring model with SHAP factor contributions classifying applications into Safe, Target, and Reach tiers.</p>
+      </div>
+
+      <!-- 4. Finance -->
+      <div class="glass p-6 rounded-2xl border border-slate-200 space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center text-base">
+          <i class="fa-solid fa-sack-dollar"></i>
+        </div>
+        <h3 class="font-bold text-slate-900 text-sm">4. Finance — Can I Afford It?</h3>
+        <p class="text-slate-500 leading-relaxed">10-year break-even ROI analysis, Section 80E tax optimization, and marketplace comparison across 6+ lenders.</p>
+      </div>
+
+      <!-- 5. Applications -->
+      <div class="glass p-6 rounded-2xl border border-slate-200 space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center text-base">
+          <i class="fa-solid fa-list-check"></i>
+        </div>
+        <h3 class="font-bold text-slate-900 text-sm">5. Applications — How Do I Apply?</h3>
+        <p class="text-slate-500 leading-relaxed">Per-university milestone checklists, deadline tracking, and AI Statement of Purpose critique with faculty alignment.</p>
+      </div>
+
+      <!-- 6. AI Advisor -->
+      <div class="glass p-6 rounded-2xl border border-slate-200 space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center text-base">
+          <i class="fa-solid fa-brain"></i>
+        </div>
+        <h3 class="font-bold text-slate-900 text-sm">6. AI Advisor — What Next?</h3>
+        <p class="text-slate-500 leading-relaxed">RAG-enabled contextual conversational agent backed by official visa guides, university requirements, and student profiles.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Footer Section -->
+<section class="py-20 text-center">
+  <div class="max-w-4xl mx-auto px-4">
+    <h2 class="text-3xl font-black text-slate-900 tracking-tight mb-3">Begin Your Higher Education Journey</h2>
+    <p class="text-sm text-slate-500 max-w-md mx-auto mb-6">Create your profile to unlock customized admission odds, merit scholarships, and biometric login.</p>
+    <div class="flex items-center justify-center gap-3">
+      <a href="{% url 'register' %}" class="btn-primary text-sm py-3 px-6">
+        Create Student Profile <i class="fa-solid fa-arrow-right text-xs"></i>
+      </a>
+      <a href="{% url 'login' %}" class="btn-secondary text-sm py-3 px-6">
+        Sign In
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,10 +1,10 @@
 Live Link : https://edu-bridge-007.vercel.app/
 
-# StudyBridge — AI-Powered Higher-Education Platform
+# EduBridge — AI-Powered Higher-Education Platform
 
 > End-to-End Decision, Financing, and Application Ecosystem
 
-StudyBridge is an enterprise-grade higher education platform engineered with Django 4.2, Firestore/PostgreSQL dual persistence, browser-based biometric Face ID authentication, and Anthropic Claude RAG integration.
+EduBridge is an enterprise-grade higher education platform engineered with Django 4.2, Firestore/PostgreSQL dual persistence, browser-based biometric Face ID authentication, and Anthropic Claude RAG integration.
 
 ---
 
@@ -22,7 +22,7 @@ StudyBridge is an enterprise-grade higher education platform engineered with Dja
 
 ## Biometric Face ID Authentication
 
-StudyBridge features privacy-first, browser-based facial recognition powered by `face-api.js` (TensorFlow.js):
+EduBridge features privacy-first, browser-based facial recognition powered by `face-api.js` (TensorFlow.js):
 - **Local Landmark Extraction**: Computes 128-dimensional facial embedding vectors entirely in the browser.
 - **Liveness Verification**: Live webcam challenge prevents photo/screen spoofing.
 - **Euclidean Verification**: Server verifies vector distance ($\le 0.55$) for fast login.
@@ -33,8 +33,8 @@ StudyBridge features privacy-first, browser-based facial recognition powered by 
 ## Architecture & Data Strategy
 
 ```text
-StudyBridge Architecture
-├── Presentation Layer: Tailwind CSS + Alpine.js + FontAwesome (Minimalist Modern SaaS)
+EduBridge Architecture
+├── Presentation Layer: Tailwind CSS + Alpine.js + FontAwesome + aura.css / global.css
 ├── Biometric Engine: face-api.js (Local 128-D Embedding Extraction)
 ├── API Gateway: Django 4.2 REST Views & Role-Based Access Control (RBAC)
 ├── Data Provider Mesh:
@@ -52,11 +52,10 @@ StudyBridge Architecture
 
 ## Quick Start (Development & Demo Mode)
 
-StudyBridge runs in **Zero-Config Demo Mode** out of the box using a built-in SQLite engine, enabling all AI tools, predictors, and assessments immediately.
+EduBridge runs in **Zero-Config Demo Mode** out of the box using a built-in SQLite engine, enabling all AI tools, predictors, and assessments immediately.
 
 ### 1. Setup Virtual Environment
 ```bash
-cd backend
 python -m venv venv
 venv\Scripts\activate      # Linux/macOS: source venv/bin/activate
 pip install -r requirements.txt

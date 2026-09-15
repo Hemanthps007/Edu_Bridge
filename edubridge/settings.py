@@ -78,9 +78,18 @@ WSGI_APPLICATION = 'edubridge.wsgi.application'
 SUPABASE_URL = os.getenv('SUPABASE_URL', '')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY') or os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('SUPABASE_ANON_KEY', '')
 
-# Dual database configuration: SQLite for local/demo/tests, Supabase PostgreSQL when SUPABASE_DB_URL or DATABASE_URL provided
+# Serverless / Vercel Environment Detection
+IS_VERCEL = bool(
+    os.getenv('VERCEL') == '1'
+    or os.getenv('VERCEL') == 'true'
+    or os.getenv('VERCEL_URL')
+    or os.getenv('VERCEL_ENV')
+    or os.getenv('AWS_LAMBDA_FUNCTION_NAME')
+)
+
+# Dual database configuration: SQLite for local/demo/tests, Supabase PostgreSQL when valid SUPABASE_DB_URL or DATABASE_URL provided
 db_url = os.getenv('SUPABASE_DB_URL') or os.getenv('DATABASE_URL')
-if db_url:
+if db_url and db_url.startswith(('postgresql://', 'postgres://')):
     try:
         import importlib
         dj_db_url = importlib.import_module("dj_database_url")
@@ -109,19 +118,25 @@ if db_url:
             }
         }
 else:
+    # On serverless (Vercel / Lambda), BASE_DIR is read-only; use /tmp for SQLite fallback
+    sqlite_path = Path('/tmp/db.sqlite3') if IS_VERCEL else (BASE_DIR / 'db.sqlite3')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': sqlite_path,
         }
     }
 
-if os.getenv('VERCEL') == '1':
+# Session Management: signed cookies for serverless / Vercel to avoid read-only filesystem errors
+if IS_VERCEL:
     SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 else:
     SESSION_ENGINE = 'django.contrib.sessions.backends.file'
     SESSION_FILE_PATH = BASE_DIR / '.sessions'
-    SESSION_FILE_PATH.mkdir(exist_ok=True)
+    try:
+        SESSION_FILE_PATH.mkdir(exist_ok=True)
+    except OSError:
+        SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 SESSION_COOKIE_AGE = 86400 * 7
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'

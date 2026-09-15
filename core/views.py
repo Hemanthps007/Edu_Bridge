@@ -87,11 +87,14 @@ def register_view(request):
             'failed_attempts': 0,
             'face_auth_enabled': False,
         }
-        fb.save_user_profile(uid, profile)
-        ip_address = request.META.get('REMOTE_ADDR', '')
-        user_agent = request.META.get('HTTP_USER_AGENT', '')
-        fb.log_user_login(uid, email, ip_address, user_agent)
-        fb.add_notification(uid, "Welcome to EduBridge", "Your account is created. Complete your student profile for personalized admissions insight.", "info", "/profile/")
+        try:
+            fb.save_user_profile(uid, profile)
+            ip_address = request.META.get('REMOTE_ADDR', '')
+            user_agent = request.META.get('HTTP_USER_AGENT', '')
+            fb.log_user_login(uid, email, ip_address, user_agent)
+            fb.add_notification(uid, "Welcome to EduBridge", "Your account is created. Complete your student profile for personalized admissions insight.", "info", "/profile/")
+        except Exception as err:
+            print(f"[EduBridge] Warning saving registration profile: {err}")
 
         request.session['user'] = {'uid': uid, 'name': name, 'email': email, 'role': role}
         messages.success(request, f'Welcome to EduBridge, {name}! +50 XP awarded.')

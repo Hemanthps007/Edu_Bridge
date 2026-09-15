@@ -2,9 +2,15 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
-
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env, falling back to .env.example if .env is missing
+env_file = BASE_DIR / '.env'
+if env_file.exists():
+    load_dotenv(env_file)
+else:
+    load_dotenv(BASE_DIR / '.env.example')
+load_dotenv()
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-edubridge-dev-key-change-in-prod-2026')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
@@ -139,6 +145,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 FIREBASE_CREDENTIALS_PATH = os.getenv('FIREBASE_CREDENTIALS_PATH', 'firebase_credentials.json')
 FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID', '')
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '')
+GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
+GROQ_MODEL = os.getenv('GROQ_MODEL', 'openai/gpt-oss-120b')
 SITE_NAME = os.getenv('SITE_NAME', 'EduBridge')
 
 CORS_ALLOW_ALL_ORIGINS = DEBUG

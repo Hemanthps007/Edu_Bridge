@@ -1,3 +1,4 @@
+import os
 import re
 from typing import Dict, Any, List
 from django.conf import settings
@@ -69,12 +70,7 @@ Student Profile Context:
 - Budget: {user_profile.get('budget', 'Moderate')}
 """
 
-    api_key = getattr(settings, "ANTHROPIC_API_KEY", "")
-    if api_key:
-        try:
-            import anthropic
-            client = anthropic.Anthropic(api_key=api_key)
-            system = f"""You are EduBridge AI — an expert, encouraging study-abroad and higher education advisor.
+    system = f"""You are EduBridge AI — an expert, encouraging study-abroad and higher education advisor.
 Use the student profile and knowledge citations below to deliver a precise, tailored, highly actionable response.
 Avoid cheesy emojis; use professional formatting, markdown bullet points, and data tables where helpful.
 
@@ -83,6 +79,83 @@ Avoid cheesy emojis; use professional formatting, markdown bullet points, and da
 Relevant Knowledge Base Citations:
 {context_str}
 """
+
+    # 1. First priority: Groq LLM Engine (ultra-fast inference)
+    groq_api_key = getattr(settings, "GROQ_API_KEY", "") or os.getenv("GROQ_API_KEY", "")
+    preferred_model = getattr(settings, "GROQ_MODEL", "") or os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+    if groq_api_key:
+        candidate_models = [
+            preferred_model,
+            "openai/gpt-oss-120b",
+            "qwen/qwen3.8-27b",
+            "openai/gpt-oss-20b",
+            "llama-3.3-70b-versatile"
+        ]
+        # Deduplicate while preserving order
+        unique_models = []
+        for m in candidate_models:
+            if m and m not in unique_models:
+                unique_models.append(m)
+
+        msgs = [{"role": "system", "content": system}]
+        if chat_history:
+            for m in chat_history[-6:]:
+                msgs.append({"role": m.get("role", "user"), "content": m.get("content", "")})
+        msgs.append({"role": "user", "content": query})
+
+        for model_name in unique_models:
+            try:
+                try:
+                    from groq import Groq
+                    client = Groq(api_key=groq_api_key)
+                    response = client.chat.completions.create(
+                        model=model_name,
+                        messages=msgs,
+                        temperature=0.5,
+                        max_tokens=900
+                    )
+                    answer_text = response.choices[0].message.content
+                    if answer_text:
+                        print(f"[EduBridge] (OK) Groq generated response via {model_name}")
+                        return {
+                            "answer": answer_text,
+                            "sources": sources
+                        }
+                except ImportError:
+                    import requests
+                    resp = requests.post(
+                        "https://api.groq.com/openai/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {groq_api_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "model": model_name,
+                            "messages": msgs,
+                            "temperature": 0.5,
+                            "max_tokens": 900
+                        },
+                        timeout=15
+                    )
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        answer_text = data["choices"][0]["message"]["content"]
+                        if answer_text:
+                            print(f"[EduBridge] (OK) Groq generated response via {model_name} (HTTP)")
+                            return {
+                                "answer": answer_text,
+                                "sources": sources
+                            }
+            except Exception as err:
+                print(f"[EduBridge] Groq model '{model_name}' attempt failed: {err}")
+                continue
+
+    # 2. Second priority: Anthropic Claude
+    api_key = getattr(settings, "ANTHROPIC_API_KEY", "") or os.getenv("ANTHROPIC_API_KEY", "")
+    if api_key:
+        try:
+            import anthropic
+            client = anthropic.Anthropic(api_key=api_key)
             msgs = []
             if chat_history:
                 for m in chat_history[-6:]:

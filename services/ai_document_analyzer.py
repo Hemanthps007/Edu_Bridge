@@ -8,6 +8,65 @@ def analyze_sop_content(text: str, target_university: str = "Target University",
     Analyzes Statement of Purpose (SOP) text across Structure, Clarity, Storytelling, University Fit, and Grammar.
     Uses Anthropic Claude when API key is available, or runs local heuristic NLP evaluation.
     """
+    groq_api_key = getattr(settings, "GROQ_API_KEY", "") or os.getenv("GROQ_API_KEY", "")
+    groq_model = getattr(settings, "GROQ_MODEL", "") or os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    if groq_api_key:
+        try:
+            prompt = f"""Analyze this Statement of Purpose for an application to {target_university} for {target_program}.
+Provide structured feedback with scores (0-100) for:
+1. Structure
+2. Clarity
+3. Storytelling
+4. University Fit
+5. Grammar
+
+Also provide 3 specific strengths and 3 actionable improvement suggestions.
+Format as valid JSON with keys: structure_score, clarity_score, storytelling_score, university_fit_score, grammar_score, overall_score, strengths, suggestions.
+
+SOP Text:
+{text[:4000]}
+"""
+            import json
+            raw = None
+            try:
+                from groq import Groq
+                client = Groq(api_key=groq_api_key)
+                completion = client.chat.completions.create(
+                    model=groq_model,
+                    messages=[
+                        {"role": "system", "content": "You are an expert admissions reviewer. Output valid JSON only."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    response_format={"type": "json_object"},
+                    max_tokens=1000
+                )
+                raw = completion.choices[0].message.content
+            except Exception:
+                import requests
+                resp = requests.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {groq_api_key}", "Content-Type": "application/json"},
+                    json={
+                        "model": groq_model,
+                        "messages": [
+                            {"role": "system", "content": "You are an expert admissions reviewer. Output valid JSON only."},
+                            {"role": "user", "content": prompt}
+                        ],
+                        "response_format": {"type": "json_object"},
+                        "max_tokens": 1000
+                    },
+                    timeout=15
+                )
+                if resp.status_code == 200:
+                    raw = resp.json()["choices"][0]["message"]["content"]
+
+            if raw:
+                json_match = re.search(r'\{.*\}', raw, re.DOTALL)
+                if json_match:
+                    return json.loads(json_match.group(0))
+        except Exception:
+            pass
+
     api_key = getattr(settings, "ANTHROPIC_API_KEY", "")
     if api_key:
         try:

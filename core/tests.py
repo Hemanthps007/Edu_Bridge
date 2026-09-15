@@ -205,9 +205,18 @@ class TemplateRenderingRegressionTests(TestCase):
 
 class SupabaseAndDatabaseTests(TestCase):
     def test_supabase_client_unconfigured_safe_fallback(self):
-        from core.supabase_client import get_supabase_client
-        client = get_supabase_client()
-        self.assertIsNone(client)
+        import os
+        import core.supabase_client as sc
+        from unittest.mock import patch
+        original = sc._supabase_client
+        sc._supabase_client = None
+        try:
+            with patch.dict(os.environ, {'SUPABASE_URL': '', 'SUPABASE_KEY': '', 'SUPABASE_SERVICE_ROLE_KEY': '', 'SUPABASE_ANON_KEY': ''}):
+                with self.settings(SUPABASE_URL='', SUPABASE_KEY=''):
+                    client = sc.get_supabase_client()
+                    self.assertIsNone(client)
+        finally:
+            sc._supabase_client = original
 
     def test_database_crud_operations(self):
         from core import firebase_client as fb
@@ -226,5 +235,17 @@ class SupabaseAndDatabaseTests(TestCase):
         deleted = fb.delete_doc('users', test_uid)
         self.assertTrue(deleted)
         self.assertIsNone(fb.get_doc('users', test_uid))
+
+
+class GroqChatbotIntegrationTests(TestCase):
+    def test_rag_service_query_and_response(self):
+        from services.rag_service import answer_rag_query
+        profile = {'name': 'Hemanth', 'country_goal': 'USA', 'degree': 'MS'}
+        res = answer_rag_query("What are the F-1 visa financial requirements?", profile)
+        self.assertIn('answer', res)
+        self.assertIn('sources', res)
+        self.assertGreater(len(res['answer']), 15)
+        self.assertTrue(any('visa' in str(s).lower() or 'f-1' in str(s).lower() or 'curated' in str(s).lower() for s in res['sources']))
+
 
 

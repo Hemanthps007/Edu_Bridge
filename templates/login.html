@@ -15,6 +15,32 @@
 
     <!-- Card -->
     <div class="glass rounded-2xl p-6 sm:p-8 shadow-sm">
+      <!-- One-Click Demo Login -->
+      <div class="mb-5 p-4 rounded-xl bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200/80">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-sky-600 text-white flex items-center justify-center shrink-0 text-sm shadow-sm">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xs font-bold text-slate-900">Explore with Demo Account</h3>
+            <p class="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
+              Instantly experience the student journey, university predictor &amp; AI advisor.
+            </p>
+            <form method="POST" action="{% url 'demo_login' %}" class="mt-2.5">
+              {% csrf_token %}
+              <button type="submit" class="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold transition shadow-sm">
+                <i class="fa-solid fa-arrow-right-to-bracket text-[11px]"></i> Instant Demo Student Login
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative mb-5 text-center">
+        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+        <span class="relative bg-white px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">or sign in with credentials</span>
+      </div>
+
       <!-- Password Login Form -->
       <form method="POST" action="{% url 'login' %}" class="space-y-4">
         {% csrf_token %}

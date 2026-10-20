@@ -102,12 +102,113 @@ def register_view(request):
     return render(request, 'register.html')
 
 
+DEMO_USER_EMAIL = 'demo@edubridge.com'
+DEMO_USER_UID = hashlib.md5(DEMO_USER_EMAIL.encode()).hexdigest()
+
+def ensure_demo_user():
+    """Ensures a rich pre-configured demo student profile exists in SQLite."""
+    profile = fb.get_user_profile(DEMO_USER_UID)
+    if not profile or not profile.get('name'):
+        profile = {
+            'uid': DEMO_USER_UID,
+            'name': 'Demo Student',
+            'email': DEMO_USER_EMAIL,
+            'password_hash': _hash('demo123'),
+            'role': 'student',
+            'degree': 'Bachelors',
+            'country_goal': 'USA',
+            'target_program': 'MS Computer Science',
+            'gre_score': 324,
+            'gpa': 8.8,
+            'degree_cgpa': 8.8,
+            'ielts_score': 8.0,
+            'work_exp': 2,
+            'internships': 2,
+            'projects': 4,
+            'research_papers': 1,
+            'budget_usd': 55000,
+            'points': 450,
+            'level': 3,
+            'streak': 5,
+            'badges': ['profile_complete', 'career_explorer', 'shortlist_master'],
+            'journey_stage': 'shortlisting',
+            'created_at': datetime.now().isoformat(),
+            'failed_attempts': 0,
+            'face_auth_enabled': False,
+        }
+        fb.save_user_profile(DEMO_USER_UID, profile)
+
+        try:
+            apps = fb.get_user_applications(DEMO_USER_UID)
+            if not apps:
+                fb.save_application(DEMO_USER_UID, {
+                    'university_name': 'Stanford University',
+                    'program_name': 'MS Computer Science',
+                    'term': 'Fall 2027',
+                    'status': 'shortlisted',
+                    'deadline': 'Dec 15, 2026',
+                    'notes': 'Target ambitious program'
+                })
+                fb.save_application(DEMO_USER_UID, {
+                    'university_name': 'Carnegie Mellon University',
+                    'program_name': 'MS Software Engineering',
+                    'term': 'Fall 2027',
+                    'status': 'in_review',
+                    'deadline': 'Jan 10, 2027',
+                    'notes': 'Transcripts and recommendation letters submitted'
+                })
+            notifs = fb.get_notifications(DEMO_USER_UID)
+            if not notifs:
+                fb.add_notification(
+                    DEMO_USER_UID,
+                    "Welcome to Demo Mode",
+                    "You are logged in as Demo Student with sample academic records and university shortlists.",
+                    "info",
+                    "/dashboard/"
+                )
+        except Exception as e:
+            print(f"[EduBridge] Seed demo extras error: {e}")
+    return DEMO_USER_UID, profile
+
+
+def demo_login_view(request):
+    """One-click demo login authenticating as Demo Student."""
+    if request.session.get('user'):
+        return redirect('dashboard')
+
+    uid, profile = ensure_demo_user()
+    request.session['user'] = {
+        'uid': uid,
+        'name': profile.get('name', 'Demo Student'),
+        'email': profile.get('email', DEMO_USER_EMAIL),
+        'role': profile.get('role', 'student'),
+    }
+    ip_address = request.META.get('REMOTE_ADDR', '')
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    try:
+        fb.log_user_login(uid, profile.get('email', DEMO_USER_EMAIL), ip_address, user_agent)
+    except Exception:
+        pass
+
+    messages.success(request, f"Welcome to EduBridge Demo, {profile.get('name', 'Demo Student')}!")
+    return redirect('dashboard')
+
+
 def login_view(request):
     if request.session.get('user'):
         return redirect('dashboard')
     if request.method == 'POST':
+        # Handle demo login trigger
+        if request.POST.get('demo') or request.POST.get('demo_login'):
+            return demo_login_view(request)
+
         email = request.POST.get('email', '').strip().lower()
         pw = request.POST.get('password', '')
+
+        # Provision demo credentials if demo user is typed manually
+        if email == DEMO_USER_EMAIL:
+            ensure_demo_user()
+
         uid = hashlib.md5(email.encode()).hexdigest()
         profile = fb.get_user_profile(uid)
 

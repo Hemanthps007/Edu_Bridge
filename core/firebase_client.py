@@ -152,8 +152,7 @@ def init_database():
             for collection, schema in SCHEMAS.items():
                 cols_def = ", ".join(f"{name} {col_type}" for name, col_type in schema['columns'])
                 cursor.execute(f"CREATE TABLE IF NOT EXISTS {collection} ({cols_def})")
-        db_type = "Supabase / PostgreSQL" if connection.vendor == 'postgresql' else "SQLite fallback"
-        print(f"[EduBridge] (OK) {db_type} database initialized")
+        print("[EduBridge] (OK) SQLite database initialized")
     except Exception as e:
         print(f"[EduBridge] Database initialization error: {e}")
 
@@ -161,8 +160,7 @@ def init_firebase():
     global _db, _demo_mode
     creds_path = os.path.join(settings.BASE_DIR, settings.FIREBASE_CREDENTIALS_PATH)
     if not os.path.exists(creds_path) or not settings.FIREBASE_PROJECT_ID:
-        db_label = "Supabase / PostgreSQL" if connection.vendor == 'postgresql' else "local database"
-        print(f"[EduBridge] (!!) Firebase credentials not found — running with {db_label}")
+        print("[EduBridge] Running with SQLite database")
         _demo_mode = True
         init_database()
         return

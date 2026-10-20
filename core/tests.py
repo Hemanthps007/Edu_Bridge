@@ -203,38 +203,52 @@ class TemplateRenderingRegressionTests(TestCase):
         self.assertIn('Study Abroad Journey', content)
 
 
-class SupabaseAndDatabaseTests(TestCase):
-    def test_supabase_client_unconfigured_safe_fallback(self):
-        import os
-        import core.supabase_client as sc
-        from unittest.mock import patch
-        original = sc._supabase_client
-        sc._supabase_client = None
-        try:
-            with patch.dict(os.environ, {'SUPABASE_URL': '', 'SUPABASE_KEY': '', 'SUPABASE_SERVICE_ROLE_KEY': '', 'SUPABASE_ANON_KEY': ''}):
-                with self.settings(SUPABASE_URL='', SUPABASE_KEY=''):
-                    client = sc.get_supabase_client()
-                    self.assertIsNone(client)
-        finally:
-            sc._supabase_client = original
+class SQLiteDatabaseAndDemoTests(TestCase):
+    def test_sqlite_database_backend(self):
+        from django.db import connection
+        self.assertEqual(connection.vendor, 'sqlite')
 
-    def test_database_crud_operations(self):
+    def test_sqlite_database_crud_operations(self):
         from core import firebase_client as fb
-        test_uid = 'test_user_supabase_validation'
-        test_data = {'name': 'Supabase Test', 'email': 'supabase@example.com', 'country_goal': 'Canada'}
+        test_uid = 'test_user_sqlite_validation'
+        test_data = {'name': 'SQLite Test', 'email': 'sqlite@example.com', 'country_goal': 'Canada'}
         saved = fb.set_doc('users', test_uid, test_data)
         self.assertTrue(saved)
 
         doc = fb.get_doc('users', test_uid)
         self.assertIsNotNone(doc)
-        self.assertEqual(doc.get('email'), 'supabase@example.com')
+        self.assertEqual(doc.get('email'), 'sqlite@example.com')
 
-        matches = fb.query_docs('users', 'email', '==', 'supabase@example.com')
+        matches = fb.query_docs('users', 'email', '==', 'sqlite@example.com')
         self.assertGreaterEqual(len(matches), 1)
 
         deleted = fb.delete_doc('users', test_uid)
         self.assertTrue(deleted)
         self.assertIsNone(fb.get_doc('users', test_uid))
+
+    def test_demo_login_view(self):
+        from core.views import demo_login_view, DEMO_USER_EMAIL
+        from core import firebase_client as fb
+        from django.test import RequestFactory
+        factory = RequestFactory()
+        req = factory.post('/demo-login/')
+        from django.contrib.sessions.middleware import SessionMiddleware
+        from django.contrib.messages.middleware import MessageMiddleware
+        SessionMiddleware(lambda r: None).process_request(req)
+        req.session.save()
+        MessageMiddleware(lambda r: None).process_request(req)
+
+        response = demo_login_view(req)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/dashboard/')
+        self.assertIn('user', req.session)
+        self.assertEqual(req.session['user']['email'], DEMO_USER_EMAIL)
+
+        # Verify demo user in database
+        uid = req.session['user']['uid']
+        profile = fb.get_user_profile(uid)
+        self.assertIsNotNone(profile)
+        self.assertEqual(profile['name'], 'Demo Student')
 
 
 class GroqChatbotIntegrationTests(TestCase):

@@ -22,12 +22,12 @@
 <body x-data="{ userMenu: false, notifMenu: false, mobileNav: false }">
 
 <!-- Navigation Bar -->
-<nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-sky-100">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
     <!-- Brand -->
     <div class="flex items-center gap-8">
       <a href="/" class="flex items-center gap-2.5 text-decoration-none">
-        <div class="w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center text-white font-bold text-sm">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm shadow-sky-500/20">
           <i class="fa-solid fa-graduation-cap"></i>
         </div>
         <span class="font-extrabold text-lg tracking-tight text-slate-900">EduBridge</span>
@@ -102,7 +102,7 @@
       <!-- User Menu -->
       <div class="relative" x-data="{ open: false }" @click.outside="open = false">
         <button @click="open = !open" class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 transition">
-          <div class="w-8 h-8 rounded-lg bg-slate-800 text-white font-semibold text-xs flex items-center justify-center">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold text-xs flex items-center justify-center shadow-sm">
             {{ current_user.name|first|upper }}
           </div>
           <span class="hidden md:inline text-sm font-medium text-slate-700 max-w-[120px] truncate">{{ current_user.name }}</span>
@@ -191,12 +191,12 @@
 </main>
 
 <!-- Footer -->
-<footer class="mt-24 border-t border-slate-200 bg-white">
+<footer class="mt-24 border-t border-sky-100 bg-white/70 backdrop-blur-md">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
       <div>
         <div class="flex items-center gap-2 mb-3">
-          <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
             <i class="fa-solid fa-graduation-cap"></i>
           </div>
           <span class="font-bold text-base text-slate-900">EduBridge</span>

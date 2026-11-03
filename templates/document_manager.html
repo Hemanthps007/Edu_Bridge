@@ -8,7 +8,8 @@
     <div>
       <span class="badge badge-blue mb-1">AI NLP Review &bull; Module 6</span>
       <h1 class="text-2xl font-black text-slate-900 tracking-tight">Statement of Purpose (SOP) Analyzer</h1>
-      <p class="text-xs text-slate-500 mt-0.5">Automated critique on structural flow, storytelling hooks, university faculty fit, and passive voice constructions.</p>
+      <p class="text-xs text-slate-500 mt-0.5">Automated critique on structural flow, storytelling hooks, university
+        faculty fit, and passive voice constructions.</p>
     </div>
   </div>
 
@@ -36,7 +37,10 @@
 
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Statement of Purpose Draft</label>
-            <textarea name="sop_text" rows="14" placeholder="Paste your complete Statement of Purpose draft here (500 to 1,200 words)..." class="inp text-xs font-mono leading-relaxed" required>During my undergraduate research in distributed systems, I observed significant throughput bottlenecks in traditional federated learning architectures. To address this challenge, I designed an asynchronous gradient exchange protocol that reduced communication overhead by 34%. This breakthrough sparked my passion for scalable machine learning systems.
+            <textarea name="sop_text" rows="14"
+              placeholder="Paste your complete Statement of Purpose draft here (500 to 1,200 words)..."
+              class="inp text-xs font-mono leading-relaxed"
+              required>During my undergraduate research in distributed systems, I observed significant throughput bottlenecks in traditional federated learning architectures. To address this challenge, I designed an asynchronous gradient exchange protocol that reduced communication overhead by 34%. This breakthrough sparked my passion for scalable machine learning systems.
 
 Carnegie Mellon University represents the quintessential academic environment for my research goals. Specifically, Professor Smith's pioneering contributions in distributed deep learning directly intersect with my planned master's thesis. I am eager to contribute to the Systems & Networking Laboratory while expanding my rigorous foundations in algorithmic optimization.</textarea>
           </div>
@@ -65,7 +69,8 @@ Carnegie Mellon University represents the quintessential academic environment fo
               <span>{{ analysis.structure_score }}%</span>
             </div>
             <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-              <div class="bg-sky-600 h-1.5 rounded-full transition-all duration-500" data-progress="{{ analysis.structure_score }}" :style="'width: {{ analysis.structure_score }}%'"></div>
+              <div class="bg-sky-600 h-1.5 rounded-full transition-all duration-500"
+                data-progress="{{ analysis.structure_score }}" :style="'width: {{ analysis.structure_score }}%'"></div>
             </div>
           </div>
 
@@ -75,7 +80,8 @@ Carnegie Mellon University represents the quintessential academic environment fo
               <span>{{ analysis.clarity_score }}%</span>
             </div>
             <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-              <div class="bg-emerald-600 h-1.5 rounded-full transition-all duration-500" data-progress="{{ analysis.clarity_score }}" :style="'width: {{ analysis.clarity_score }}%'"></div>
+              <div class="bg-emerald-600 h-1.5 rounded-full transition-all duration-500"
+                data-progress="{{ analysis.clarity_score }}" :style="'width: {{ analysis.clarity_score }}%'"></div>
             </div>
           </div>
 
@@ -85,7 +91,9 @@ Carnegie Mellon University represents the quintessential academic environment fo
               <span>{{ analysis.storytelling_score }}%</span>
             </div>
             <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-              <div class="bg-amber-600 h-1.5 rounded-full transition-all duration-500" data-progress="{{ analysis.storytelling_score }}" :style="'width: {{ analysis.storytelling_score }}%'"></div>
+              <div class="bg-amber-600 h-1.5 rounded-full transition-all duration-500"
+                data-progress="{{ analysis.storytelling_score }}" :style="'width: {{ analysis.storytelling_score }}%'">
+              </div>
             </div>
           </div>
 
@@ -95,7 +103,9 @@ Carnegie Mellon University represents the quintessential academic environment fo
               <span>{{ analysis.university_fit_score }}%</span>
             </div>
             <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-              <div class="bg-indigo-600 h-1.5 rounded-full transition-all duration-500" data-progress="{{ analysis.university_fit_score }}" :style="'width: {{ analysis.university_fit_score }}%'"></div>
+              <div class="bg-indigo-600 h-1.5 rounded-full transition-all duration-500"
+                data-progress="{{ analysis.university_fit_score }}"
+                :style="'width: {{ analysis.university_fit_score }}%'"></div>
             </div>
           </div>
 
@@ -105,13 +115,15 @@ Carnegie Mellon University represents the quintessential academic environment fo
               <span>{{ analysis.grammar_score }}%</span>
             </div>
             <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-              <div class="bg-sky-600 h-1.5 rounded-full transition-all duration-500" data-progress="{{ analysis.grammar_score }}" :style="'width: {{ analysis.grammar_score }}%'"></div>
+              <div class="bg-sky-600 h-1.5 rounded-full transition-all duration-500"
+                data-progress="{{ analysis.grammar_score }}" :style="'width: {{ analysis.grammar_score }}%'"></div>
             </div>
           </div>
         </div>
 
         <!-- Metrics Chips -->
-        <div class="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-center text-xs mb-4">
+        <div
+          class="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-center text-xs mb-4">
           <div>
             <div class="text-[10px] text-slate-400 font-medium">Word Count</div>
             <div class="font-bold text-slate-800 text-xs">{{ analysis.word_count }}</div>
@@ -141,7 +153,8 @@ Carnegie Mellon University represents the quintessential academic environment fo
           </div>
 
           <div>
-            <div class="font-bold text-slate-900 uppercase tracking-wider text-[10px] mb-1.5">Priority Improvement Suggestions</div>
+            <div class="font-bold text-slate-900 uppercase tracking-wider text-[10px] mb-1.5">Priority Improvement
+              Suggestions</div>
             <div class="space-y-1 text-slate-700">
               {% for sug in analysis.suggestions %}
               <div class="flex items-start gap-1.5 bg-amber-50/50 p-2 rounded-lg text-amber-800">
@@ -154,13 +167,15 @@ Carnegie Mellon University represents the quintessential academic environment fo
         </div>
       </div>
       {% else %}
-      <div class="glass rounded-2xl p-8 text-center text-slate-400 border border-slate-200 flex flex-col items-center justify-center min-h-[380px]">
+      <div
+        class="glass rounded-2xl p-8 text-center text-slate-400 border border-slate-200 flex flex-col items-center justify-center min-h-[380px]">
         <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center text-xl mb-3">
           <i class="fa-regular fa-file-lines"></i>
         </div>
         <h3 class="text-sm font-bold text-slate-700 mb-1">Awaiting SOP Submission</h3>
         <p class="text-xs text-slate-500 max-w-xs leading-relaxed">
-          Paste your statement of purpose on the left to evaluate logical flow, university alignment, and active voice readability.
+          Paste your statement of purpose on the left to evaluate logical flow, university alignment, and active voice
+          readability.
         </p>
       </div>
       {% endif %}

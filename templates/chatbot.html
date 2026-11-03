@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}EduBridge AI Study Advisor{% endblock %}
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/chatbot.css' %}"/>
+<link rel="stylesheet" href="{% static 'css/chatbot.css' %}?v=2.1" />
 {% endblock %}
 
 {% block content %}
@@ -21,7 +21,8 @@
         </div>
         <div class="text-[11px] text-slate-500 flex items-center gap-1.5">
           <i class="fa-solid fa-circle text-[6px] text-emerald-500"></i>
-          Context Ingested: {{ profile.name }} &bull; {{ profile.country_goal|default:'USA' }} &bull; GPA {{ profile.degree_cgpa|default:'8.4' }}
+          Context Ingested: {{ profile.name }} &bull; {{ profile.country_goal|default:'USA' }} &bull; GPA {{
+          profile.degree_cgpa|default:'8.4' }}
         </div>
       </div>
     </div>
@@ -42,7 +43,8 @@
         <span class="font-bold text-xs text-slate-900">EduBridge AI Advisor</span>
       </div>
       <div class="prose-ai">
-        <p>Hello {{ profile.name|default:current_user.name }}! I have loaded your academic profile context and target destination (<strong>{{ profile.country_goal|default:'USA' }}</strong>).</p>
+        <p>Hello {{ profile.name|default:current_user.name }}! I have loaded your academic profile context and target
+          destination (<strong>{{ profile.country_goal|default:'USA' }}</strong>).</p>
         <p>I can assist you across the higher-education pipeline:</p>
         <ul>
           <li><strong>University Strategy:</strong> Target, Safe, and Reach selectivity classification</li>
@@ -78,7 +80,7 @@
   <div class="bg-white border-t border-slate-200 p-4 flex-shrink-0">
     <div class="max-w-4xl mx-auto flex items-center gap-3">
       <input type="text" id="chatInput" placeholder="Ask about universities, loans, SOP reviews, visa rules..."
-             class="inp text-xs py-2.5" onkeydown="if(event.key==='Enter') sendMessage()" />
+        class="inp text-xs py-2.5" onkeydown="if(event.key==='Enter') sendMessage()" />
       <button onclick="sendMessage()" class="btn-primary flex-shrink-0 text-xs py-2.5 px-4">
         <i class="fa-solid fa-paper-plane"></i> Send
       </button>

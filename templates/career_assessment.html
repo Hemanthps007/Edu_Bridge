@@ -7,22 +7,26 @@
   <div class="text-center max-w-2xl mx-auto">
     <span class="badge badge-blue mb-2">RIASEC Psychometric &bull; Module 1</span>
     <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Higher-Education Career Navigator</h1>
-    <p class="text-xs sm:text-sm text-slate-500 mt-1">Discover your optimal graduate specialization, salary benchmarks, and prerequisite courses through standardized Holland Code assessment.</p>
+    <p class="text-xs sm:text-sm text-slate-500 mt-1">Discover your optimal graduate specialization, salary benchmarks,
+      and prerequisite courses through standardized Holland Code assessment.</p>
 
     <!-- Progress Indicator -->
     <div class="flex items-center justify-center gap-2 mt-6 text-xs font-semibold">
       <div class="flex items-center gap-1.5" :class="currentStep >= 1 ? 'text-slate-900' : 'text-slate-400'">
-        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs" :class="currentStep >= 1 ? 'bg-sky-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500'">1</span>
+        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs"
+          :class="currentStep >= 1 ? 'bg-sky-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500'">1</span>
         <span>Interests</span>
       </div>
       <div class="w-8 h-px bg-slate-200"></div>
       <div class="flex items-center gap-1.5" :class="currentStep >= 2 ? 'text-slate-900' : 'text-slate-400'">
-        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs" :class="currentStep >= 2 ? 'bg-sky-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500'">2</span>
+        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs"
+          :class="currentStep >= 2 ? 'bg-sky-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500'">2</span>
         <span>Skills</span>
       </div>
       <div class="w-8 h-px bg-slate-200"></div>
       <div class="flex items-center gap-1.5" :class="currentStep >= 3 ? 'text-slate-900' : 'text-slate-400'">
-        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs" :class="currentStep >= 3 ? 'bg-sky-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500'">3</span>
+        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs"
+          :class="currentStep >= 3 ? 'bg-sky-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500'">3</span>
         <span>RIASEC Inventory</span>
       </div>
     </div>
@@ -41,42 +45,49 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <label class="p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center gap-3 cursor-pointer">
+          <label
+            class="p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center gap-3 cursor-pointer">
             <input type="checkbox" name="interest_coding" value="1" checked class="rounded text-sky-600" />
             <div>
               <div class="font-bold text-slate-800">Building Software &amp; Algorithmic Tools</div>
-              <div class="text-slate-400 text-[11px]">Writing clean code, designing architectures, debugging systems</div>
+              <div class="text-slate-400 text-[11px]">Writing clean code, designing architectures, debugging systems
+              </div>
             </div>
           </label>
-          <label class="p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center gap-3 cursor-pointer">
+          <label
+            class="p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center gap-3 cursor-pointer">
             <input type="checkbox" name="interest_math" value="1" checked class="rounded text-sky-600" />
             <div>
               <div class="font-bold text-slate-800">Solving Mathematical &amp; Statistical Models</div>
               <div class="text-slate-400 text-[11px]">Probability, linear algebra, calculus, quantitative logic</div>
             </div>
           </label>
-          <label class="p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center gap-3 cursor-pointer">
+          <label
+            class="p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center gap-3 cursor-pointer">
             <input type="checkbox" name="interest_data" value="1" checked class="rounded text-sky-600" />
             <div>
               <div class="font-bold text-slate-800">Analyzing Big Data &amp; Neural Patterns</div>
               <div class="text-slate-400 text-[11px]">Extracting trends, training predictive models, data mining</div>
             </div>
           </label>
-          <label class="p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center gap-3 cursor-pointer">
+          <label
+            class="p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center gap-3 cursor-pointer">
             <input type="checkbox" name="interest_business" value="1" class="rounded text-sky-600" />
             <div>
               <div class="font-bold text-slate-800">Product Management &amp; Venture Strategy</div>
               <div class="text-slate-400 text-[11px]">User research, product roadmaps, go-to-market execution</div>
             </div>
           </label>
-          <label class="p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center gap-3 cursor-pointer">
+          <label
+            class="p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center gap-3 cursor-pointer">
             <input type="checkbox" name="interest_security" value="1" class="rounded text-sky-600" />
             <div>
               <div class="font-bold text-slate-800">Cybersecurity &amp; Cloud Reliability</div>
               <div class="text-slate-400 text-[11px]">Penetration defense, network security, zero-trust cloud</div>
             </div>
           </label>
-          <label class="p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center gap-3 cursor-pointer">
+          <label
+            class="p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center gap-3 cursor-pointer">
             <input type="checkbox" name="interest_design" value="1" class="rounded text-sky-600" />
             <div>
               <div class="font-bold text-slate-800">Human-Computer Interaction (UI/UX)</div>
@@ -100,7 +111,8 @@
         </div>
 
         <div class="space-y-4 text-xs">
-          <div class="p-3.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div
+            class="p-3.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <span class="font-bold text-slate-900 text-sm">Programming (Python, C++, Java)</span>
               <p class="text-slate-400 text-[11px]">Data structures, OOP, systems programming</p>
@@ -114,7 +126,8 @@
             </select>
           </div>
 
-          <div class="p-3.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div
+            class="p-3.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <span class="font-bold text-slate-900 text-sm">Mathematics &amp; Statistics</span>
               <p class="text-slate-400 text-[11px]">Calculus, linear algebra, probability distributions</p>
@@ -128,7 +141,8 @@
             </select>
           </div>
 
-          <div class="p-3.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div
+            class="p-3.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <span class="font-bold text-slate-900 text-sm">Written Communication &amp; Research</span>
               <p class="text-slate-400 text-[11px]">Drafting documentation, research papers, presentations</p>
@@ -142,7 +156,8 @@
             </select>
           </div>
 
-          <div class="p-3.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div
+            class="p-3.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <span class="font-bold text-slate-900 text-sm">System Architecture &amp; DevOps</span>
               <p class="text-slate-400 text-[11px]">Distributed databases, cloud platforms, Docker/K8s</p>
@@ -171,50 +186,115 @@
       <div x-show="currentStep === 3" style="display:none;" class="space-y-6">
         <div>
           <h2 class="text-base font-bold text-slate-900">Step 3 — Standardized Holland Code (RIASEC)</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Please indicate how much you agree with each statement (1 = Strongly Disagree to 5 = Strongly Agree).</p>
+          <p class="text-xs text-slate-500 mt-0.5">Please indicate how much you agree with each statement (1 = Strongly
+            Disagree to 5 = Strongly Agree).</p>
         </div>
 
         <div class="space-y-3 text-xs">
           <!-- Investigative (I) -->
-          <div class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span class="text-slate-800 font-medium">I enjoy solving complex theoretical and mathematical problems.</span>
-            <select name="q_i_1" class="inp sm:w-36 font-semibold"><option value="5" selected>5 - Strongly Agree</option><option value="4">4 - Agree</option><option value="3">3 - Neutral</option><option value="2">2 - Disagree</option><option value="1">1 - Strongly Disagree</option></select>
+          <div
+            class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-slate-800 font-medium">I enjoy solving complex theoretical and mathematical
+              problems.</span>
+            <select name="q_i_1" class="inp sm:w-36 font-semibold">
+              <option value="5" selected>5 - Strongly Agree</option>
+              <option value="4">4 - Agree</option>
+              <option value="3">3 - Neutral</option>
+              <option value="2">2 - Disagree</option>
+              <option value="1">1 - Strongly Disagree</option>
+            </select>
           </div>
-          <div class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span class="text-slate-800 font-medium">I like researching scientific discoveries and reading technical whitepapers.</span>
-            <select name="q_i_2" class="inp sm:w-36 font-semibold"><option value="5" selected>5 - Strongly Agree</option><option value="4">4 - Agree</option><option value="3">3 - Neutral</option><option value="2">2 - Disagree</option><option value="1">1 - Strongly Disagree</option></select>
+          <div
+            class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-slate-800 font-medium">I like researching scientific discoveries and reading technical
+              whitepapers.</span>
+            <select name="q_i_2" class="inp sm:w-36 font-semibold">
+              <option value="5" selected>5 - Strongly Agree</option>
+              <option value="4">4 - Agree</option>
+              <option value="3">3 - Neutral</option>
+              <option value="2">2 - Disagree</option>
+              <option value="1">1 - Strongly Disagree</option>
+            </select>
           </div>
 
           <!-- Realistic (R) -->
-          <div class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span class="text-slate-800 font-medium">I enjoy practical hands-on building, configuring servers or physical hardware.</span>
-            <select name="q_r_1" class="inp sm:w-36 font-semibold"><option value="4" selected>4 - Agree</option><option value="5">5 - Strongly Agree</option><option value="3">3 - Neutral</option><option value="2">2 - Disagree</option><option value="1">1 - Strongly Disagree</option></select>
+          <div
+            class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-slate-800 font-medium">I enjoy practical hands-on building, configuring servers or
+              physical hardware.</span>
+            <select name="q_r_1" class="inp sm:w-36 font-semibold">
+              <option value="4" selected>4 - Agree</option>
+              <option value="5">5 - Strongly Agree</option>
+              <option value="3">3 - Neutral</option>
+              <option value="2">2 - Disagree</option>
+              <option value="1">1 - Strongly Disagree</option>
+            </select>
           </div>
-          <div class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span class="text-slate-800 font-medium">I like troubleshooting tangible engineering and network bottlenecks.</span>
-            <select name="q_r_2" class="inp sm:w-36 font-semibold"><option value="4" selected>4 - Agree</option><option value="5">5 - Strongly Agree</option><option value="3">3 - Neutral</option><option value="2">2 - Disagree</option><option value="1">1 - Strongly Disagree</option></select>
+          <div
+            class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-slate-800 font-medium">I like troubleshooting tangible engineering and network
+              bottlenecks.</span>
+            <select name="q_r_2" class="inp sm:w-36 font-semibold">
+              <option value="4" selected>4 - Agree</option>
+              <option value="5">5 - Strongly Agree</option>
+              <option value="3">3 - Neutral</option>
+              <option value="2">2 - Disagree</option>
+              <option value="1">1 - Strongly Disagree</option>
+            </select>
           </div>
 
           <!-- Conventional (C) -->
-          <div class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span class="text-slate-800 font-medium">I appreciate clear structured processes, clean documentation, and organized files.</span>
-            <select name="q_c_1" class="inp sm:w-36 font-semibold"><option value="4" selected>4 - Agree</option><option value="5">5 - Strongly Agree</option><option value="3">3 - Neutral</option><option value="2">2 - Disagree</option><option value="1">1 - Strongly Disagree</option></select>
+          <div
+            class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-slate-800 font-medium">I appreciate clear structured processes, clean documentation, and
+              organized files.</span>
+            <select name="q_c_1" class="inp sm:w-36 font-semibold">
+              <option value="4" selected>4 - Agree</option>
+              <option value="5">5 - Strongly Agree</option>
+              <option value="3">3 - Neutral</option>
+              <option value="2">2 - Disagree</option>
+              <option value="1">1 - Strongly Disagree</option>
+            </select>
           </div>
 
           <!-- Enterprising (E) -->
-          <div class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span class="text-slate-800 font-medium">I like pitching initiatives, leading teams, and pitching commercial value.</span>
-            <select name="q_e_1" class="inp sm:w-36 font-semibold"><option value="3" selected>3 - Neutral</option><option value="4">4 - Agree</option><option value="5">5 - Strongly Agree</option><option value="2">2 - Disagree</option><option value="1">1 - Strongly Disagree</option></select>
+          <div
+            class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-slate-800 font-medium">I like pitching initiatives, leading teams, and pitching commercial
+              value.</span>
+            <select name="q_e_1" class="inp sm:w-36 font-semibold">
+              <option value="3" selected>3 - Neutral</option>
+              <option value="4">4 - Agree</option>
+              <option value="5">5 - Strongly Agree</option>
+              <option value="2">2 - Disagree</option>
+              <option value="1">1 - Strongly Disagree</option>
+            </select>
           </div>
 
           <!-- Artistic (A) & Social (S) -->
-          <div class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span class="text-slate-800 font-medium">I enjoy creative visual aesthetics, design systems, and storytelling.</span>
-            <select name="q_a_1" class="inp sm:w-36 font-semibold"><option value="3" selected>3 - Neutral</option><option value="4">4 - Agree</option><option value="5">5 - Strongly Agree</option><option value="2">2 - Disagree</option><option value="1">1 - Strongly Disagree</option></select>
+          <div
+            class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-slate-800 font-medium">I enjoy creative visual aesthetics, design systems, and
+              storytelling.</span>
+            <select name="q_a_1" class="inp sm:w-36 font-semibold">
+              <option value="3" selected>3 - Neutral</option>
+              <option value="4">4 - Agree</option>
+              <option value="5">5 - Strongly Agree</option>
+              <option value="2">2 - Disagree</option>
+              <option value="1">1 - Strongly Disagree</option>
+            </select>
           </div>
-          <div class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span class="text-slate-800 font-medium">I find satisfaction in mentoring other engineers and conducting peer reviews.</span>
-            <select name="q_s_1" class="inp sm:w-36 font-semibold"><option value="4" selected>4 - Agree</option><option value="5">5 - Strongly Agree</option><option value="3">3 - Neutral</option><option value="2">2 - Disagree</option><option value="1">1 - Strongly Disagree</option></select>
+          <div
+            class="p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-slate-800 font-medium">I find satisfaction in mentoring other engineers and conducting
+              peer reviews.</span>
+            <select name="q_s_1" class="inp sm:w-36 font-semibold">
+              <option value="4" selected>4 - Agree</option>
+              <option value="5">5 - Strongly Agree</option>
+              <option value="3">3 - Neutral</option>
+              <option value="2">2 - Disagree</option>
+              <option value="1">1 - Strongly Disagree</option>
+            </select>
           </div>
         </div>
 

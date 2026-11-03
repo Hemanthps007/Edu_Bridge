@@ -6,19 +6,19 @@
 :root {
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  
+
   --color-bg: linear-gradient(135deg, #BAE6FD 0%, #E0F2FE 50%, #F0F9FF 100%);
   --color-text-main: #0F172A;
   --color-text-muted: #64748B;
-  
+
   --color-primary: #0284C7;
   --color-primary-hover: #0369A1;
   --color-primary-gradient: linear-gradient(135deg, #0EA5E9, #0284C7);
-  
+
   --color-brand: #0284C7;
   --color-brand-hover: #0369A1;
   --color-brand-gradient: linear-gradient(135deg, #0EA5E9, #0284C7);
-  
+
   --border-color: #BAE6FD;
   --border-focus: #0284C7;
   --radius-sm: 6px;
@@ -27,7 +27,9 @@
   --radius-xl: 16px;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -40,7 +42,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
 }
 
@@ -49,13 +56,16 @@ h1, h2, h3, h4, h5, h6 {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: #F1F5F9;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #CBD5E1;
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
 }
@@ -77,6 +87,7 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 14px;
   text-decoration: none;
 }
+
 .btn-primary:hover {
   background: linear-gradient(135deg, #0284C7, #0369A1);
   transform: translateY(-1px);
@@ -98,6 +109,7 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 14px;
   text-decoration: none;
 }
+
 .btn-secondary:hover {
   background: #F0F9FF;
   border-color: #0284C7;
@@ -120,6 +132,7 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 14px;
   text-decoration: none;
 }
+
 .btn-brand:hover {
   background: linear-gradient(135deg, #0284C7, #0369A1);
   transform: translateY(-1px);
@@ -142,6 +155,7 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 14px;
   text-decoration: none;
 }
+
 .btn-teal:hover {
   background: linear-gradient(135deg, #0284C7, #0369A1);
   transform: translateY(-1px);
@@ -161,10 +175,12 @@ h1, h2, h3, h4, h5, h6 {
   transition: border-color 0.2s, box-shadow 0.2s;
   font-family: var(--font-body);
 }
+
 .inp:focus {
   border-color: var(--border-focus);
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18);
 }
+
 .inp::placeholder {
   color: #94A3B8;
 }
@@ -187,10 +203,12 @@ input[type="checkbox"] {
   align-items: center;
   gap: 6px;
 }
+
 .nav-item:hover {
   color: #0284C7;
   background: #E0F2FE;
 }
+
 .nav-item.active {
   color: #0284C7;
   background: #E0F2FE;
@@ -207,26 +225,31 @@ input[type="checkbox"] {
   font-size: 12px;
   font-weight: 600;
 }
+
 .badge-blue {
   background: #E0F2FE;
   color: #0369A1;
   border: 1px solid #BAE6FD;
 }
+
 .badge-green {
   background: #ECFDF5;
   color: #047857;
   border: 1px solid #A7F3D0;
 }
+
 .badge-amber {
   background: #FFFBEB;
   color: #B45309;
   border: 1px solid #FDE68A;
 }
+
 .badge-rose {
   background: #FFF1F2;
   color: #BE123C;
   border: 1px solid #FECDD3;
 }
+
 .badge-slate {
   background: #F0F9FF;
   color: #0369A1;

@@ -7,10 +7,12 @@
   <div class="pb-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
       <div class="flex items-center gap-2 mb-1">
-        <span class="badge badge-amber font-bold text-xs"><i class="fa-solid fa-shield-halved"></i> Administrator Access</span>
+        <span class="badge badge-amber font-bold text-xs"><i class="fa-solid fa-shield-halved"></i> Administrator
+          Access</span>
       </div>
       <h1 class="text-2xl font-black text-slate-900 tracking-tight">Platform Management &amp; Analytics</h1>
-      <p class="text-xs text-slate-500 mt-0.5">Real-time system telemetry, active student records, and application monitoring.</p>
+      <p class="text-xs text-slate-500 mt-0.5">Real-time system telemetry, active student records, and application
+        monitoring.</p>
     </div>
   </div>
 
@@ -71,12 +73,15 @@
                 <div class="font-bold text-slate-900">{{ u.name|default:u.email }}</div>
                 <div class="text-[11px] text-slate-400">{{ u.email }}</div>
               </td>
-              <td class="py-2.5 capitalize"><span class="badge badge-slate text-[10px]">{{ u.role|default:'student' }}</span></td>
+              <td class="py-2.5 capitalize"><span class="badge badge-slate text-[10px]">{{ u.role|default:'student'
+                  }}</span></td>
               <td class="py-2.5 font-medium">{{ u.country_goal|default:'USA' }}</td>
               <td class="py-2.5 font-semibold text-slate-900">{{ u.points|default:50 }} XP</td>
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="py-4 text-center text-slate-400">No users found.</td></tr>
+            <tr>
+              <td colspan="4" class="py-4 text-center text-slate-400">No users found.</td>
+            </tr>
             {% endfor %}
           </tbody>
         </table>
@@ -104,14 +109,17 @@
               <td class="py-2.5 font-bold text-slate-900">{{ app.university_name }}</td>
               <td class="py-2.5 text-slate-600">{{ app.program_name }}</td>
               <td class="py-2.5 capitalize">
-                <span class="badge {% if app.status == 'admitted' %}badge-green{% elif app.status == 'submitted' %}badge-blue{% else %}badge-slate{% endif %} text-[10px]">
+                <span
+                  class="badge {% if app.status == 'admitted' %}badge-green{% elif app.status == 'submitted' %}badge-blue{% else %}badge-slate{% endif %} text-[10px]">
                   {{ app.status }}
                 </span>
               </td>
               <td class="py-2.5 text-slate-500 font-medium">{{ app.deadline }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="py-4 text-center text-slate-400">No applications recorded yet.</td></tr>
+            <tr>
+              <td colspan="4" class="py-4 text-center text-slate-400">No applications recorded yet.</td>
+            </tr>
             {% endfor %}
           </tbody>
         </table>

@@ -8,7 +8,8 @@
     <div>
       <span class="badge badge-blue mb-1">Amortization Engine &bull; Module 4</span>
       <h1 class="text-2xl font-black text-slate-900 tracking-tight">Education Loan EMI Calculator</h1>
-      <p class="text-xs text-slate-500 mt-0.5">Simulate exact monthly installments, total interest burden, and first-year amortization breakdown.</p>
+      <p class="text-xs text-slate-500 mt-0.5">Simulate exact monthly installments, total interest burden, and
+        first-year amortization breakdown.</p>
     </div>
     <a href="{% url 'loan_marketplace' %}" class="btn-secondary text-xs">
       <i class="fa-solid fa-building-columns"></i> View Lender Marketplace
@@ -26,7 +27,8 @@
         <form method="get" action="{% url 'emi_calculator' %}" class="space-y-4 text-xs">
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Principal Amount (INR)</label>
-            <input type="number" name="p" value="{{ principal|floatformat:0 }}" class="inp text-xs font-bold text-slate-900" />
+            <input type="number" name="p" value="{{ principal|floatformat:0 }}"
+              class="inp text-xs font-bold text-slate-900" />
             <p class="text-[10px] text-slate-400 mt-1">e.g. 4500000 = ₹45 Lakhs</p>
           </div>
 
@@ -38,10 +40,10 @@
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Tenure (Years)</label>
             <select name="y" class="inp text-xs font-semibold">
-              <option value="5" {% if tenure_years == 5 %}selected{% endif %}>5 Years (60 Months)</option>
-              <option value="7" {% if tenure_years == 7 %}selected{% endif %}>7 Years (84 Months)</option>
-              <option value="10" {% if tenure_years == 10 %}selected{% endif %}>10 Years (120 Months)</option>
-              <option value="15" {% if tenure_years == 15 %}selected{% endif %}>15 Years (180 Months)</option>
+              <option value="5" {% if tenure_years==5 %}selected{% endif %}>5 Years (60 Months)</option>
+              <option value="7" {% if tenure_years==7 %}selected{% endif %}>7 Years (84 Months)</option>
+              <option value="10" {% if tenure_years==10 %}selected{% endif %}>10 Years (120 Months)</option>
+              <option value="15" {% if tenure_years==15 %}selected{% endif %}>15 Years (180 Months)</option>
             </select>
           </div>
 

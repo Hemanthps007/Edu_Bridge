@@ -1,5 +1,5 @@
 # Multi-stage production Dockerfile for EduBridge
-FROM python:3.11-slim as base
+FROM python:3.11-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -22,4 +22,4 @@ RUN python manage.py collectstatic --noinput || true
 
 EXPOSE 8000
 
-CMD ["gunicorn", "edubridge.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn edubridge.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"]

@@ -46,6 +46,7 @@ urlpatterns = [
 
     # Module 7: AI Advisor & Study Planner
     path('chat/',                          views.chatbot_view,                name='chatbot'),
+    path('chatbot/',                       views.chatbot_view,                name='chatbot_alias'),
     path('api/chat/',                      views.chat_api,                    name='chat_api'),
     path('study-planner/',                 views.study_planner_view,          name='study_planner'),
 

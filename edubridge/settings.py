@@ -16,6 +16,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-edubridge-dev-key-change-i
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 allowed_hosts_env = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.vercel.app')
 ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()]
+if DEBUG and '*' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.extend(['*', 'testserver', '0.0.0.0'])
 
 if os.getenv('VERCEL') == '1' or os.getenv('VERCEL_URL'):
     if '.vercel.app' not in ALLOWED_HOSTS:

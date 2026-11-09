@@ -7,3 +7,10 @@ class CoreConfig(AppConfig):
     def ready(self):
         from . import firebase_client
         firebase_client.init_firebase()
+
+
+
+
+
+
+
